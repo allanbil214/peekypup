@@ -1,0 +1,170 @@
+<!-- <footer class="footer-nav">
+  <nav class="navbar navbar-expand-sm navbar-dark fixed-bottom" style="background-color:rgb(46, 44, 54);">
+      <div class="container-fluid">
+          <div class="collapse navbar-collapse" id="mynavbar">
+              <ul class="navbar-nav me-auto">
+                  <li class="nav-item"><a class="nav-link">© 2023 PeekyPup, Inc</a></li>
+              </ul>
+              <form class="d-flex">
+                  <ul class="navbar-nav me-auto">
+                      <li class="nav-item pe-2"><a class="nav-link" href="#">About</a></li>
+                      <li class="nav-item pe-2"><a class="nav-link" href="#">Terms</a></li>
+                      <li class="nav-item pe-2"><a class="nav-link" href="#">Privacy</a></li>
+                  </ul>
+              </form>
+          </div>
+      </div>
+  </nav>
+</footer> -->
+
+<footer class="footer fixed-bottom bg-dark footer-nav">
+  <div class="container-fluid">
+    <nav class="navbar navbar-dark justify-content-between">
+      <span class="navbar-text">&copy; 2023 PeekyPup, Inc</span>
+      <span class="navbar-text">
+        <a class="text-white me-3" href="#">About</a>
+        <a class="text-white me-3" href="#">Terms</a>
+        <a class="text-white" href="#">Privacy</a>
+      </span>
+    </nav>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+console.log("Window Width:", window.innerWidth);
+
+  // Check if jQuery is loaded
+  if (typeof jQuery == 'undefined') {
+    console.error('jQuery is not loaded.');
+  } else {
+    console.log('jQuery is loaded.');
+  }
+
+  // Handling Image File Input Change
+  $(".image_file").change(function(e) {
+
+  for (var i = 0; i < e.originalEvent.srcElement.files.length; i++) {
+      
+      var file = e.originalEvent.srcElement.files[i];
+      
+      var reader = new FileReader();
+      reader.onloadend = function() {
+        document.getElementById("modal_img").src = reader.result;
+      }
+      reader.readAsDataURL(file);
+      $("input").after(img);
+  }
+  });
+
+    // Mobile Nav Header Toggler
+    $(document).ready(function () {
+      $('.navbar-toggler').on('click', function () {
+        $('.navbar').toggleClass('navClick');
+      });
+    });
+
+  // Handling Window Scroll Events
+  $(window).scroll(function(){
+    $('nav').toggleClass('scrolled', $(this).scrollTop() > 120);
+    //console.log($(this).scrollTop());
+  });
+  
+
+  // Handling Window Scroll Events for Footer
+  $(window).scroll(function() {
+    var scroll = $(window).scrollTop();
+    var $footerNav = $(".footer-nav");
+
+    if (scroll < 20) {
+        $footerNav.fadeIn("slow").addClass("show");
+    } else {
+        $footerNav.fadeOut("slow").removeClass("show");
+    }
+});
+
+  // Dropdown Menu Toggle
+  $(".btn-toggle").on("click", function() {
+    $('.dropdown-menu').toggleClass('open');
+  });
+  $(".dropdown-menu li").on("click", function() {
+    $('.btn-toggle').text($(this).text());
+    $('.dropdown-menu').removeClass('open');
+  });
+
+// Add view count
+$(document).ready(function () {
+    // Get an array of image IDs
+    var imageIds = $('.card-header').map(function () {
+        return $(this).data('image-id');
+    }).get();
+
+    // Make an asynchronous POST request with the array of image IDs
+    $.ajax({
+        type: 'POST',
+        url: '/add_viewcounts',
+        data: JSON.stringify({ imageIds: imageIds }),
+        contentType: 'application/json',
+        success: function (data) {
+            console.log('add_viewcounts successful. Response:', data);
+        },
+        error: function (error) {
+            console.error('Error calling add_viewcounts. Error:', error);
+        }
+    });
+});
+
+
+// Like and Unlike
+$(document).ready(function () {
+        // Attach a click event handler to the like button
+        $('.likeButton').on('click', function () {
+            // Get the image ID, liked status, and logged-in status from the data attributes
+            const imageId = $(this).data('image-id');
+            const liked = $(this).data('liked');
+            const loggedIn = $(this).data('logged-in');
+
+            // Cache $(this) in a variable to use inside AJAX callbacks
+            const $this = $(this);
+
+            // Check if the user is logged in
+            if (loggedIn) {
+                // Send a POST request to your Flask route when the button is clicked
+                $.ajax({
+                    url: liked ? `/unupdoot/${imageId}` : `/updoot/${imageId}`,
+                    method: 'POST',
+                    success: function (response) {
+                        // Handle the response (e.g., update the UI)
+                        console.log(`Image ${liked ? 'un' : ''}liked!`);
+
+                        // Update the button and liked status
+                        $this.data('liked', !liked);
+                        $this.find('span').toggleClass('bi-heart bi-heart-fill');
+
+                        // Fetch the latest like count from the server
+                        $.get(`/getlikecount/${imageId}`, function (response) {
+                            // Update the like count on the UI
+                            $this.find('.like-count').text(response);
+                        });
+
+                    },
+                    error: function (error) {
+                        // Handle errors
+                        console.error(`Error ${liked ? 'unliking' : 'liking'} image:`, error);
+                        alert(`Error ${liked ? 'unliking' : 'liking'} image: ${error.responseText}`);
+                    }
+                });
+            } else {
+                // Inform the user that they need to be logged in to like/unlike the image
+                console.log('Please log in to like/unlike this image.');
+                alert('Please log in to like/unlike this image.');
+            }
+        }); 
+    });
+
+
+
+</script>
+</html>

@@ -1,0 +1,185 @@
+{% include 'header.html' %}
+<body style="background: linear-gradient(#1F1F4B, #292b30); margin: 0; min-height: 100vh;">
+
+  <div class="modal fade" id="newPost">
+    <div class="modal-dialog">
+      <div class="modal-content" style="background-image: url(/static/other/observatory_bg.png);">
+  
+        <div class="modal-header text-white">
+          <div class="col"></div>
+          <div class="col-auto text-white ps-4"><h4 class="fw-bold">upload your magic here</h4></div>
+          <div class="col"></div>
+          <button type="button" class="btn-close" style="background-color:#fff;" data-bs-dismiss="modal"></button>
+        </div>
+  
+        <form role="form" enctype=multipart/form-data action="/save_image" method="POST">
+          <div class="modal-body border-0 text-center" style="background-color: rgb(58, 56, 71);">
+            <label class="btn fw-bold text-white m-3">
+              <i class="bi bi-image-fill pe-2"></i> Choose your Photo
+              <input name="image_file" class="image_file" type="file" hidden required>
+              <img class="pt-3" id="modal_img" style="width: 75%;" >
+            </label>
+            <div class="row">
+              <div class="col"><hr style="color: #fff;"></div>
+              <div class="col-auto text-white fw-bold">ALSO</div>
+              <div class="col"><hr style="color: #fff;"></div>
+            </div>
+            <div class="input-group pt-4 ps-5 pe-5 input-group-lg">
+              <input type="text" class="form-control" name="title" placeholder="Image title here..." required
+                style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;">
+            </div>
+            <div class="input-group pt-3 ps-5 pe-5 input-group-lg">
+              <textarea name="description" class="form-control" placeholder="Description..."
+                style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;"></textarea>
+            </div>
+            <div class="input-group pt-3 ps-5 pe-5 input-group-lg">
+              <input type="text" class="form-control" name="tags" placeholder="Select tags or create new tags..." list="tags" required
+                style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;">
+              <datalist id="tags">
+                {%for z in tags%}
+                <option value="{{z.1}}">
+                {%endfor%}
+              </datalist>
+            </div>  
+          </div>
+  
+          <div class="modal-footer" style="background-color: rgb(58, 56, 71); background-image: url(/static/other/observatory_lower.png);">
+            <button type="submit" class="btn btn-success fw-bold" data-bs-dismiss="modal">Submit<i class="bi bi-box-arrow-in-right ps-2"></i></button>
+          </div>
+        </form>
+  
+      </div>
+    </div>
+  </div>
+  
+
+{% for y in specImg %}
+<div class="modal fade" id="editPost">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background-image: url(/static/other/observatory_bg.png);">
+
+      <div class="modal-header text-white">
+        <div class="col"></div>
+        <div class="col-auto text-white ps-4"><h4 class="fw-bold">edit your magic here</h4></div>
+        <div class="col"></div>
+        <button type="button" class="btn-close" style="background-color:#fff;" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form role="form" enctype=multipart/form-data action="/save_edited_image" method="POST">
+        <div class="modal-body border-0 text-center" style="background-color: rgb(58, 56, 71);">
+          <label class="btn fw-bold text-white m-3">
+            <img src="/static/img/{{y.3}}" id="modal_img" style="width: 75%;">
+            <input type="hidden" value="{{ y.1 }}" name="edit_this"/>
+          </label>
+          <div class="row">
+            <div class="col"><hr style="color: #fff;"></div>
+            <div class="col-auto text-white fw-bold">ALSO</div>
+            <div class="col"><hr style="color: #fff;"></div>
+          </div>
+          <div class="input-group pt-4 ps-5 pe-5 input-group-lg">
+            <input type="text" class="form-control" name="title" value="{{y.4}}" placeholder="Image title here..." required
+              style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;">
+          </div>
+          <div class="input-group pt-3 ps-5 pe-5 input-group-lg">
+            <textarea name="description" class="form-control" placeholder="Description..."
+              style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;">{{y.5}}</textarea>
+          </div>
+          <div class="input-group pt-3 ps-5 pe-5 input-group-lg">
+            <input type="text" class="form-control" name="tags" value="{{y.2}}" placeholder="Select tags or create new tags..." list="tags" required
+              style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;">
+            <datalist id="tags">
+              {%for z in tags%}
+              <option value="{{z.1}}">
+              {%endfor%}
+            </datalist>
+          </div>  
+        </div>
+
+        <div class="modal-footer" style="background-color: rgb(58, 56, 71); background-image: url(/static/other/observatory_lower.png);">
+          <button type="submit" class="btn btn-success fw-bold" data-bs-dismiss="modal">Submit<i class="bi bi-box-arrow-in-right ps-2"></i></button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- bagian header -->
+<div class="p-5 text-white text-center">
+<!--   <h2 class="pt-4 fw-bold" style="color: #aed8ea;">{{line}}</h2> -->
+</div>
+
+<!-- bagian isi -->
+<div class="container mt-5">
+  <div class="row">
+    <!-- post -->
+    <div class="col-sm-8">
+      <h2 class="fw-bold text-white">
+        {{y.4}}
+        {% if session.get("uid") and y.8 == session["uid"] %}
+          <div class="col">
+            <button class="btn" data-bs-toggle="modal" data-bs-target="#editPost" style="float:right;"><i class="bi bi-pencil-fill"></i></button>
+          </div>
+          <div class="col">
+            <form action="{{ url_for('sayonara_image') }}" method="post">
+              <input type="hidden" value="{{ y.1 }}" name="del_this"/>
+              <button type="submit" class="btn" style="float:right;"><i class="bi bi-trash3-fill"></i></button>
+            </form>  
+          </div>
+        {% endif %}
+      </h2>
+      <h6 style="color: #b8b8b8;">
+        {% if y.7 is not none %}
+        <a href="/userpage/{{y.7}}"><i class="bi bi-person-fill">   {{y.7}}</i></a>
+        {% else %}
+        <i class="bi bi-person-fill">   {{y.7}}</i>
+        {% endif %}
+        <i class="bi bi-dot"></i> 
+        <a href="/t/{{y.0}}"><i class="bi bi-tag-fill">   {{y.2}}</i> </a>
+        <i class="bi bi-dot"></i> 
+        <i class="bi bi-calendar-week">      {{y.6}}</i>
+        {% if y.5 %}
+        <i class="bi bi-dot"></i> 
+        <i class="text-white bi bi-card-text">       {{y.5}}</i>
+        {% endif %}
+      </h6>
+      <hr style="color: #fff;">
+
+      <div class="fakeimg">
+        <img src="/static/img/{{y.3}}" width="95%">
+      </div>
+      <!-- bagian komen -->
+        <hr style="color: #fff;"><!-- Rubah dulu lan -->
+        <h5 class="fw-bold text-white"><i class="bi bi-card-text pe-2"></i>xxx Comments</h5>
+        <p class="pt-2 pb-5 text-white">{{y.5}}</p> 
+      
+      {% endfor %}
+    </div>
+    <!-- scrollify -->
+    <div class="col-sm-4 scrollify sticky"> 
+      <h5 class="fw-bold text-white">Newest Uploaded Magic</h5>
+      <div class="col"><hr style="color: #fff;"></div>
+      {% for x in newImg %}
+        <div class="row pt-2">
+          <div class="col-sm-2">
+            <a href="/i/{{x.1}}">
+              <img src="/static/img/{{x.3}}" width="50" height="50">
+            </a>
+          </div>
+          <div class="col-sm-10 text-light">
+            <a href="/i/{{x.1}}">
+              {{x.4}} <br>
+              <i class="max-lines" style="font-size:small; color: #adadad;">{{x.5}}</i>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+      <hr class="d-sm-none">
+    </div>
+  </div>
+</div>
+
+</body>
+{% include 'footer.html' %}
+

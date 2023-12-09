@@ -1,0 +1,184 @@
+<footer class="footer-nav">
+    <nav class="navbar navbar-expand-sm navbar-dark fixed-bottom" style="background-color:rgb(46, 44, 54);">
+        <div class="container-fluid">
+        <div class="collapse navbar-collapse" id="mynavbar">
+            <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+                <a class="nav-link">© 2023 PeekyPup, Inc</a>
+            </li>
+            </ul>
+            <form class="d-flex">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item pe-2">
+                <a class="nav-link" href="#">About</a>
+                </li>
+                <li class="nav-item pe-2">
+                <a class="nav-link" href="#">Terms</a>
+                </li>
+                <li class="nav-item pe-2">
+                <a class="nav-link" href="#">Privacy</a>
+                </li>
+            </ul>
+            </form>
+        </div>
+        </div>
+    </nav> 
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    
+      // Check if jQuery is loaded
+      if (typeof jQuery == 'undefined') {
+        console.error('jQuery is not loaded.');
+      } else {
+        console.log('jQuery is loaded.');
+      }
+    
+      $(".image_file").change(function(e) {
+    
+      for (var i = 0; i < e.originalEvent.srcElement.files.length; i++) {
+          
+          var file = e.originalEvent.srcElement.files[i];
+          
+          var reader = new FileReader();
+          reader.onloadend = function() {
+            document.getElementById("modal_img").src = reader.result;
+          }
+          reader.readAsDataURL(file);
+          $("input").after(img);
+      }
+      });
+    
+      $(window).scroll(function(){
+        $('nav').toggleClass('scrolled', $(this).scrollTop() > 120);
+        //console.log($(this).scrollTop());
+      });
+      
+      $(window).scroll(function(event) {
+        function footer()
+      {
+          var scroll = $(window).scrollTop(); 
+          if(scroll<20)
+          { 
+              $(".footer-nav").fadeIn("slow").addClass("show");
+          }
+          else
+          {
+              $(".footer-nav").fadeOut("slow").removeClass("show");
+          }
+          
+          clearTimeout($.data(this, 'scrollTimer'));
+          $.data(this, 'scrollTimer', setTimeout(function() {
+              if ($('.footer-nav').is(':hover')) {
+                  footer();
+              }
+              else
+              {
+                  $(".footer-nav").fadeOut("slow");
+              }
+        }, 2000));
+        }
+        footer();
+       });
+    
+      $(".btn-toggle").on("click", function() {
+        $('.dropdown-menu').toggleClass('open');
+      });
+      $(".dropdown-menu li").on("click", function() {
+        $('.btn-toggle').text($(this).text());
+        $('.dropdown-menu').removeClass('open');
+      });
+    
+        // When the document is ready
+    $(document).ready(function () {
+        // Get an array of image IDs
+        var imageIds = $('.card-header').map(function () {
+            return $(this).data('image-id');
+        }).get();
+    
+        // Make an asynchronous POST request with the array of image IDs
+        $.ajax({
+            type: 'POST',
+            url: '/add_viewcounts',
+            data: JSON.stringify({ imageIds: imageIds }),
+            contentType: 'application/json',
+            success: function (data) {
+                console.log('add_viewcounts successful. Response:', data);
+            },
+            error: function (error) {
+                console.error('Error calling add_viewcounts. Error:', error);
+            }
+        });
+    });
+    
+    $(document).ready(function () {
+            // Attach a click event handler to the like button
+            $('.likeButton').on('click', function () {
+                // Get the image ID, liked status, and logged-in status from the data attributes
+                const imageId = $(this).data('image-id');
+                const liked = $(this).data('liked');
+                const loggedIn = $(this).data('logged-in');
+    
+                // Cache $(this) in a variable to use inside AJAX callbacks
+                const $this = $(this);
+    
+                // Check if the user is logged in
+                if (loggedIn) {
+                    // Check if the image has already been liked by the user
+                    if (!liked) {
+                        // Send a POST request to your Flask route when the button is clicked
+                        $.ajax({
+                            url: `/updoot/${imageId}`,
+                            method: 'POST',
+                            success: function (response) {
+                                // Handle the response (e.g., update the UI)
+                                console.log('Image liked!');
+    
+                                // Update the button and liked status
+                                $this.data('liked', true);
+                                $this.find('span').removeClass('bi-heart').addClass('bi-heart-fill');
+    
+                                // Update the like count
+                                const likeCountElement = $this.find('.like-count');
+                                likeCountElement.text(parseInt(likeCountElement.text()) + 1);
+                            },
+                            error: function (error) {
+                                // Handle errors
+                                console.error('Error liking image:', error);
+                                alert('Error liking image: ' + error.responseText);
+                            }
+                        });
+                    } else {
+                      // Send a POST request to your Flask route when the button is clicked to unlike the image
+                      $.ajax({
+                          url: `/unupdoot/${imageId}`,
+                          method: 'POST',
+                          success: function (response) {
+                              // Handle the response (e.g., update the UI)
+                              console.log('Image unliked!');
+    
+                              // Update the button and liked status
+                              $this.data('liked', false);
+                              $this.find('span').removeClass('bi-heart-fill').addClass('bi-heart');
+    
+                              // Update the like count
+                              const likeCountElement = $this.find('.like-count');
+                              likeCountElement.text(parseInt(likeCountElement.text()) - 1);
+                          },
+                          error: function (error) {
+                              // Handle errors
+                              console.error('Error unliking image:', error);
+                              alert('Error unliking image: ' + error.responseText);
+                          }
+                      });
+                }
+                } else {
+                    // Inform the user that they need to be logged in to like the image
+                    console.log('Please log in to like this image.');
+                    alert('Please log in to like this image.');
+                }
+            });
+        });
+    </script>
+    </html>
