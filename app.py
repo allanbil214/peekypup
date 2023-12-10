@@ -1,4 +1,5 @@
-from inspect import getfile
+from inspect import getcomments, getfile
+from plistlib import UID
 from flask import Flask, redirect, render_template, request, url_for, session, flash, make_response #belum ada flash di htmlnya
 from random import *
 from functools import wraps
@@ -26,12 +27,21 @@ def require_api_token(func):
     def check_token(*args, **kwargs):
         if 'api_session_token' not in session:
             return redirect(url_for("newest"))
+
         try:
             data = jwt.decode(session["api_session_token"], app.config["SECRET_KEY"])
-        except:
+        except jwt.ExpiredSignatureError:
+            # Token has expired
+            session.clear()
             session["msg_color"] = "warning"
-            flash("Token Expired")
+            flash("Token Expired. Please log in again.")
             return redirect(url_for("newest"))
+        except jwt.InvalidTokenError:
+            session.clear()
+            session["msg_color"] = "danger"
+            flash("Invalid Token. Please log in again.")
+            return redirect(url_for("newest"))
+
         return func(*args, **kwargs)
 
     return check_token
@@ -413,13 +423,14 @@ def posts():
     randLine = newMdl.funnyLine()
     randBG = randint(1,9)
     getImageTags = newMdl.get_imagetags()
-    getImageSpecific = newMdl.get_user_based_image(session["uname"], session["uid"])
+    input_search = "@" + session["uname"]
+    getImageSpecific = newMdl.get_images_specific(input_search, session["uid"])
     getTags = newMdl.get_tags()
-    getTotal = newMdl.count_user_based_images(session["uid"])
-
+    getTotal = newMdl.count_search_based_images(input_search)
+    
     return render_template("index.html", 
-    line = randLine, bg = randBG, newImg = getImageSpecific, total = getTotal, slect = "Newest",
-    imgtgs = getImageTags, kolor = kolours, tags = getTags, searched = "user " + session["uname"])
+    line = randLine, bg = randBG, newImg = getImageSpecific, searched = "user " + session["uname"], slect = "Newest",
+    imgtgs = getImageTags, kolor = kolours, tags = getTags, total = getTotal)
 
 #route ke page image detail
 @app.route("/i/<int:im_id>")
@@ -431,11 +442,27 @@ def images(im_id):
     getImageSpecific = newMdl.get_id_based_image(im_id)
     getImagesNew = newMdl.get_images_newest(session["uid"])
     getTags = newMdl.get_tags()
+    getComments = newMdl.get_comments(im_id)
+    sumComments = newMdl.sum_comments(im_id)
     
     return render_template("images.html", 
     line = randLine, bg = randBG, newImg = getImagesNew, specImg = getImageSpecific,
-    imgtgs = getImageTags, kolor = kolours, tags = getTags)
+    imgtgs = getImageTags, kolor = kolours, tags = getTags, comments = getComments, sumcmnt = sumComments)
 
+#add comment
+@app.route('/add_comment', methods=['POST'])
+def add_comment():
+    if request.method == 'POST':
+        image_id = request.form['image_id']
+        user_id = session.get("uid")  # Assuming you have user authentication
+        comment_text = request.form['comment_text']
+        comment_date = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # Insert comment into the database
+        newMdl = mdl
+        newMdl.add_comment(image_id, user_id, comment_text, comment_date)
+
+    return redirect(url_for('images', im_id=image_id))  # Redirect to the images route or wherever appropriate
 
 #############################################################################################################
 #DASHBOARD

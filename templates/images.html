@@ -140,8 +140,10 @@
         <i class="bi bi-dot"></i> 
         <i class="bi bi-calendar-week">      {{y.6}}</i>
         {% if y.5 %}
-        <i class="bi bi-dot"></i> 
-        <i class="text-white bi bi-card-text">       {{y.5}}</i>
+        <button style="color: #ddd;" class="likeButton btn" data-image-id="{{y.1}}" data-liked="{{y.10}}" data-logged-in="{{session['uname']}}">
+          <span class="bi {% if y.10 and session['uname'] %}bi-heart-fill{% else %}bi-heart{% endif %}"></span>
+          <label class="like-count mx-1">{{ y.9 }}</label>
+        </button>
         {% endif %}
       </h6>
       <hr style="color: #fff;">
@@ -150,10 +152,57 @@
         <img src="/static/img/{{y.3}}" width="95%">
       </div>
       <!-- bagian komen -->
-        <hr style="color: #fff;"><!-- Rubah dulu lan -->
-        <h5 class="fw-bold text-white"><i class="bi bi-card-text pe-2"></i>xxx Comments</h5>
-        <p class="pt-2 pb-5 text-white">{{y.5}}</p> 
+      <!-- Add this form within the existing image details section -->
       
+      {% if session.get("uid") %}
+      <form role="form" action="/add_comment" method="POST">
+        <input type="hidden" name="image_id" value="{{y.1}}">
+        <div class="input-group pt-3 ps-5 pe-5 input-group-lg">
+          <textarea name="comment_text" class="form-control" placeholder="Add a comment..." required
+            style="background-color:rgb(43, 38, 53); border: 1px solid #797979; color: #fff; border-radius: 2px;"></textarea>
+        </div>
+        <div class="modal-footer mx-5" style="background-color: rgb(58, 56, 71); background-repeat: no-repeat; background-image: url(/static/other/observatory_lower.png)">
+          <div class="col" style="text-align: left;">
+            <a class="fw-bold" style="color:#56ff64; margin-left: 60px;" href="#">Read Community Rules</a>
+          </div>          
+          <p class="text-white me-3">500</p>
+          <button type="submit" class="btn btn-success fw-bold" data-bs-dismiss="modal">Post</i></button>
+        </div>
+      </form>
+    {% else %}
+      <div class="text-white mt-3">
+        <p class="fw-bold">You must be logged in to comment. <a href="/login" style="color:#56ff64">Sign In</a> or <a href="/register" style="color:#56ff64">Sign Up</a>.</p>
+      </div>
+    {% endif %}
+    
+    
+
+      <div class="mt-5">
+        {% for sum in sumcmnt %}
+          <h4 class="fw-bold text-white">{{sum.0}} Comments</h4>
+        {% endfor %}
+        <hr style="color: #fff;"><!-- Rubah dulu lan -->
+      
+        <!-- Check if there are comments -->
+        {% if comments %}
+          <!-- Individual Comment -->
+          {% for cmnt in comments %}
+            <div class="media mt-3 text-white">
+              <div class="media-body">
+                <a class="mt-0 text-white" href="/userpage/{{cmnt.2}}"><span class="fw-bold" style="color:#56ff64">{{cmnt.5}}</span> • {{cmnt.4}}</a>
+                <p class="text-white">{{cmnt.3}}</p>
+              </div>
+            </div>
+            <hr style="color: #fff;"><!-- Rubah dulu lan -->
+          {% endfor %}
+        {% else %}
+          <!-- Display "No comments" if there are no comments -->
+          <p class="text-white">No comments.</p>
+        {% endif %}
+      </div>
+      
+      <p class="py-5"></p>
+
       {% endfor %}
     </div>
     <!-- scrollify -->

@@ -43,7 +43,8 @@ class Model():
                             users.username,
                             COALESCE(SUM(iv.view_count), 0) AS total_views, 
                             image.score,
-                            CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user
+                            CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                            COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
                         FROM
                             image_tags
                         LEFT JOIN
@@ -56,7 +57,9 @@ class Model():
                             image_views iv ON image.id = iv.image_id
                         LEFT JOIN
                             image_like ON image.id = image_like.image_id
-                            AND (image_like.user_id = %s OR %s IS NULL)                            
+                            AND (image_like.user_id = %s OR %s IS NULL)     
+                        LEFT JOIN
+                            img_comments ON image.id = img_comments.image_id                       
                         GROUP BY
                             tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
                         ORDER BY
@@ -78,7 +81,8 @@ class Model():
                         users.username,
                         COALESCE(SUM(iv.view_count), 0) AS total_views, 
                         image.score,
-                        CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user
+                        CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                        COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
                     FROM
                         image_tags
                     LEFT JOIN
@@ -91,7 +95,9 @@ class Model():
                         image_views iv ON image.id = iv.image_id
                     LEFT JOIN
                         image_like ON image.id = image_like.image_id
-                        AND (image_like.user_id = %s OR %s IS NULL)                            
+                        AND (image_like.user_id = %s OR %s IS NULL) 
+                    LEFT JOIN
+                        img_comments ON image.id = img_comments.image_id                                                    
                     GROUP BY
                         tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
                     ORDER BY
@@ -113,7 +119,8 @@ class Model():
                         users.username,
                         COALESCE(SUM(iv.view_count), 0) AS total_views, 
                         image.score,
-                        CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user
+                        CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                        COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
                     FROM
                         image_tags
                     LEFT JOIN
@@ -126,7 +133,9 @@ class Model():
                         image_views iv ON image.id = iv.image_id
                     LEFT JOIN
                         image_like ON image.id = image_like.image_id
-                        AND (image_like.user_id = %s OR %s IS NULL)                        
+                        AND (image_like.user_id = %s OR %s IS NULL)    
+                    LEFT JOIN
+                        img_comments ON image.id = img_comments.image_id                                            
                     GROUP BY
                         tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
                     ORDER BY
@@ -149,7 +158,8 @@ class Model():
                                 users.username,
                                 COALESCE(SUM(iv.view_count), 0) AS total_views, 
                                 image.score,
-                                CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user
+                                CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                                COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
                             FROM
                                 image_tags
                             LEFT JOIN
@@ -163,6 +173,8 @@ class Model():
                             LEFT JOIN
                                 image_like ON image.id = image_like.image_id
                                     AND (image_like.user_id = %s OR %s IS NULL)  
+                            LEFT JOIN
+                                img_comments ON image.id = img_comments.image_id        
                             WHERE
                                 COALESCE(image.user_id, 'dummy_value') = 'dummy_value'
                             GROUP BY
@@ -186,7 +198,8 @@ class Model():
                                 users.username,
                                 COALESCE(SUM(iv.view_count), 0) AS total_views, 
                                 image.score,
-                                CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user
+                                CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                                COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
                             FROM
                                 image_tags
                             LEFT JOIN
@@ -200,6 +213,8 @@ class Model():
                             LEFT JOIN
                                 image_like ON image.id = image_like.image_id
                                 AND (image_like.user_id = %s OR %s IS NULL)  
+                            LEFT JOIN
+                                img_comments ON image.id = img_comments.image_id                                
                             WHERE
                                 tags.tag_name LIKE %s
                             GROUP BY
@@ -220,7 +235,8 @@ class Model():
                                 users.username,
                                 COALESCE(SUM(iv.view_count), 0) AS total_views, 
                                 image.score,
-                                CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user
+                                CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                                COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
                             FROM
                                 image_tags
                             LEFT JOIN
@@ -234,6 +250,8 @@ class Model():
                             LEFT JOIN
                                 image_like ON image.id = image_like.image_id
                                 AND (image_like.user_id = %s OR %s IS NULL)  
+                            LEFT JOIN
+                                img_comments ON image.id = img_comments.image_id                                    
                         WHERE
                             users.username LIKE %s
                         GROUP BY
@@ -253,7 +271,8 @@ class Model():
                                 users.username,
                                 COALESCE(SUM(iv.view_count), 0) AS total_views, 
                                 image.score,
-                                CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user
+                                CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                                COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
                             FROM
                                 image_tags
                             LEFT JOIN
@@ -267,6 +286,8 @@ class Model():
                             LEFT JOIN
                                 image_like ON image.id = image_like.image_id
                                 AND (image_like.user_id = %s OR %s IS NULL)  
+                            LEFT JOIN
+                                img_comments ON image.id = img_comments.image_id                                    
                             WHERE
                                 image.title LIKE %s
                             GROUP BY
@@ -278,38 +299,46 @@ class Model():
 
 
     def get_user_based_image(uname, userId):
-        cur = db.cursor()           
-        cur.execute("""SELECT
-                            tags.id AS tag_id,
-                            image.id AS image_id,
-                            tags.tag_name,
-                            image.filename,
-                            image.title,
-                            image.desc,
-                            image.input_date,
-                            users.username,
-                            COALESCE(SUM(iv.view_count), 0) AS total_views, 
-                            image.score,
-                            CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user
-                        FROM
-                            image_tags
-                        LEFT JOIN
-                            image ON image_tags.image_id = image.id
-                        LEFT JOIN
-                            users ON users.id = image.user_id
-                        LEFT JOIN
-                            tags ON image_tags.tag_id = tags.id
-                        LEFT JOIN
-                            image_views iv ON image.id = iv.image_id
-                        LEFT JOIN
-                            image_like ON image.id = image_like.image_id
-                            AND (image_like.user_id = %s OR %s IS NULL)  
-                    WHERE
-                        users.username LIKE %s
-                    GROUP BY
-                        tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
-                    ORDER BY
-                        image.input_date DESC""", (userId, userId, f"%{uname}%"))
+        cur = db.cursor()        
+        y = uname.replace("@", "")
+        query = """SELECT
+                    tags.id AS tag_id,
+                    image.id AS image_id,
+                    tags.tag_name,
+                    image.filename,
+                    image.title,
+                    image.desc,
+                    image.input_date,
+                    users.username,
+                    COALESCE(SUM(iv.view_count), 0) AS total_views, 
+                    image.score,
+                    CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                    COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
+                FROM
+                    image_tags
+                LEFT JOIN
+                    image ON image_tags.image_id = image.id
+                LEFT JOIN
+                    users ON users.id = image.user_id
+                LEFT JOIN
+                    tags ON image_tags.tag_id = tags.id
+                LEFT JOIN
+                    image_views iv ON image.id = iv.image_id
+                LEFT JOIN
+                    image_like ON image.id = image_like.image_id
+                    AND (image_like.user_id = %s OR %s IS NULL)  
+                LEFT JOIN
+                    img_comments ON image.id = img_comments.image_id                                    
+                WHERE
+                    users.username LIKE %s
+                GROUP BY
+                    tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
+                ORDER BY
+                    image.input_date DESC"""
+
+        params = (userId, userId, f"'%{y}%'")
+        print("Executing query:", query % params)
+        cur.execute(query, params)
 
         return cur.fetchall()
 
@@ -326,7 +355,8 @@ class Model():
                                 users.username,
                                 COALESCE(SUM(iv.view_count), 0) AS total_views, 
                                 image.score,
-                                CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user
+                                CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                            COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
                             FROM
                                 image_tags
                             LEFT JOIN
@@ -340,6 +370,8 @@ class Model():
                             LEFT JOIN
                                 image_like ON image.id = image_like.image_id
                                 AND (image_like.user_id = %s OR %s IS NULL)  
+                            LEFT JOIN
+                                img_comments ON image.id = img_comments.image_id                                    
                             WHERE tags.id = "%s"
                             GROUP BY
                                 tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
@@ -347,15 +379,41 @@ class Model():
 
         return cur.fetchall()
 
-    def get_id_based_image(title):
+    def get_id_based_image(image_id):
         cur = db.cursor()           
-        cur.execute(f"""SELECT tags.id, image.id, tags.tag_name, image.filename, 
-                        image.title, image.desc, image.input_date, users.username, users.id FROM image_tags
-                        left JOIN image ON image_tags.image_id = image.id
-                        left JOIN tags ON image_tags.tag_id = tags.id 
-                        LEFT JOIN users ON users.id = image.user_id
-                                WHERE image.id = "{title}"
-                                order by image.input_date desc""")
+        cur.execute(f"""SELECT
+                            tags.id AS tag_id,
+                            image.id AS image_id,
+                            tags.tag_name,
+                            image.filename,
+                            image.title,
+                            image.desc,
+                            image.input_date,
+                            users.username,
+                            COALESCE(SUM(iv.view_count), 0) AS total_views, 
+                            image.score,
+                            CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                            COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
+                        FROM
+                            image_tags
+                        LEFT JOIN
+                            image ON image_tags.image_id = image.id
+                        LEFT JOIN
+                            users ON users.id = image.user_id
+                        LEFT JOIN
+                            tags ON image_tags.tag_id = tags.id
+                        LEFT JOIN
+                            image_views iv ON image.id = iv.image_id
+                        LEFT JOIN
+                            image_like ON image.id = image_like.image_id
+                        LEFT JOIN
+                            img_comments ON image.id = img_comments.image_id                                
+                        WHERE
+                            image.id = {image_id}
+                        GROUP BY
+                            tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
+                        ORDER BY
+                            image.input_date DESC""") 
 
         return cur.fetchall()
 
@@ -411,15 +469,38 @@ class Model():
         return cur.fetchone()
     ## end aio>
     
+
+    ## adding new image comments
+    def add_comment(image_id, user_id, comment_text, comment_date):
+        cur = db.cursor()
+        cur.execute("INSERT INTO `img_comments` (`image_id`, `user_id`, `comment_text`, `comment_date`) VALUES (%s, %s, %s, %s)", 
+                    (image_id, user_id, comment_text, comment_date))
+        db.commit()
+
+    def get_comments(image_id):
+        cur = db.cursor()
+        #cur.execute(f"""SELECT * FROM img_comments WHERE image_id={image_id} AND user_id={user_id}""")
+        cur.execute(f"""SELECT img_comments.*, users.username
+                    FROM img_comments
+                    JOIN users ON img_comments.user_id = users.id
+                    WHERE img_comments.image_id = {image_id};
+                    """)
+        return cur.fetchall()
+
+    def sum_comments(image_id):
+        cur = db.cursor()
+        cur.execute(f""" SELECT COUNT(*) as comment_count
+                        FROM img_comments
+                        WHERE image_id={image_id}""")
+        return cur.fetchall()
+
+
     ## adding new image view counts
     def add_viewcounts(image_ids, view_date):
         cur = db.cursor()
         view_counts = [(image_id, 1, view_date) for image_id in image_ids]
         cur.executemany("INSERT INTO `image_views` (`image_id`, `view_count`, `view_date`) VALUES (%s, %s, %s)", view_counts)
         db.commit()
-
-
-
 
     # def get_liked(image_ids, user_id):
     #     cur = db.cursor()
