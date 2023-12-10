@@ -22,6 +22,9 @@ kolours = ["rgb(25, 62, 68, 0.95)", "rgb(99, 56, 117, 0.95)",
     "rgb(183, 92, 103, 0.95)", "rgb(18, 149, 166, 0.95)"]
 
 # fungsi jwt dan session
+def clear_session_on_startup():
+    session.clear()
+
 def require_api_token(func):
     @wraps(func)
     def check_token(*args, **kwargs):
@@ -504,4 +507,5 @@ def image_data():
     line = randLine, msg_color = session["msg_color"], total = getTotal)
 
 if __name__ == "__main__":
+    app.before_first_request(clear_session_on_startup)
     app.run(debug = True)
