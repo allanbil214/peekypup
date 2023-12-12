@@ -117,40 +117,60 @@
     <div class="col-sm-8">
       <h2 class="fw-bold text-white">
         {{y.4}}
-        {% if session.get("uid") and y.8 == session["uid"] %}
-          <div class="col">
-            <button class="btn" data-bs-toggle="modal" data-bs-target="#editPost" style="float:right;"><i class="bi bi-pencil-fill"></i></button>
-          </div>
-          <div class="col">
-            <form action="{{ url_for('sayonara_image') }}" method="post">
-              <input type="hidden" value="{{ y.1 }}" name="del_this"/>
-              <button type="submit" class="btn" style="float:right;"><i class="bi bi-trash3-fill"></i></button>
-            </form>  
-          </div>
-        {% endif %}
       </h2>
-      <h6 style="color: #b8b8b8;">
-        {% if y.7 is not none %}
-        <a href="/userpage/{{y.7}}"><i class="bi bi-person-fill">   {{y.7}}</i></a>
-        {% else %}
-        <i class="bi bi-person-fill">   {{y.7}}</i>
-        {% endif %}
-        <i class="bi bi-dot"></i> 
-        <a href="/t/{{y.0}}"><i class="bi bi-tag-fill">   {{y.2}}</i> </a>
-        <i class="bi bi-dot"></i> 
-        <i class="bi bi-calendar-week">      {{y.6}}</i>
-        {% if y.5 %}
-        <button style="color: #ddd;" class="likeButton btn" data-image-id="{{y.1}}" data-liked="{{y.10}}" data-logged-in="{{session['uname']}}">
-          <span class="bi {% if y.10 and session['uname'] %}bi-heart-fill{% else %}bi-heart{% endif %}"></span>
-          <label class="like-count mx-1">{{ y.9 }}</label>
-        </button>
-        {% endif %}
-      </h6>
+      <h6 style="color: #b8b8b8; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            {% if y.7 is not none %}
+                <a href="/userpage/{{y.7}}"><i class="bi bi-person-fill">   {{y.7}}</i></a>
+            {% else %}
+                <i class="bi bi-person-fill">   {{y.7}}</i>
+            {% endif %}
+            <i class="bi bi-dot"></i> 
+            <a href="/t/{{y.0}}"><i class="bi bi-tag-fill">   {{y.2}}</i></a>
+            <i class="bi bi-dot"></i> 
+            <i class="bi bi-calendar-week">      {{y.6}}</i>
+        </div>
+        <div style="display: flex; align-items: center;">
+            {% if y.5 %}
+                <button style="color: #ddd;" class="likeButton btn" data-image-id="{{y.1}}" data-liked="{{y.10}}" data-logged-in="{{session['uname']}}">
+                    <span class="bi {% if y.10 and session['uname'] %}bi-heart-fill{% else %}bi-heart{% endif %}"></span>
+                    <label class="like-count mx-1">{{ y.9 }}</label>
+                </button>
+            {% endif %}
+            {% if session['uname'] == y.7 %}
+            <i class="bi bi-dot"></i> 
+                <form action="{{url_for('sayonara_image')}}" method="post">
+                    <input type="hidden" value="{{ y.1 }}" name="del_this" />
+                    <button style="color: #ddd;" class="deleteButton btn" data-image-id="{{y.1}}">
+                        <span class="bi bi-trash3-fill"></span>
+                    </button>
+                </form>
+                <i class="bi bi-dot"></i> 
+                <div class="col">
+                    <button class="btn" data-bs-toggle="modal" data-bs-target="#editPost" style="float:right; color: #ddd;">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                </div>
+                <i class="bi bi-dot"></i> 
+            {% endif %}
+        </div>
+    </h6>
+    
+    
+    
       <hr style="color: #fff;">
 
       <div class="fakeimg">
         <img src="/static/img/{{y.3}}" width="95%">
       </div>
+      {% if y.5 %}
+      <div class="mb-5">
+        <h4 class="fw-bold text-white mt-5">Description</h4>
+        <hr style="color: #fff;"><!-- Rubah dulu lan -->
+        <p class="text-white">{{y.5}}</p>
+        <hr style="color: #fff;">
+      </div>
+      {% endif %}
       <!-- bagian komen -->
       <!-- Add this form within the existing image details section -->
       
@@ -158,17 +178,17 @@
       <form role="form" action="/add_comment" method="POST">
         <input type="hidden" name="image_id" value="{{y.1}}">
         <div class="input-group pt-3 ps-5 pe-5 input-group-lg">
-          <textarea name="comment_text" class="form-control" placeholder="Add a comment..." required
-            style="background-color:rgb(43, 38, 53); border: 1px solid #797979; color: #fff; border-radius: 2px;"></textarea>
+            <textarea name="comment_text" id="comment-text" class="form-control" placeholder="Add a comment..." required
+                style="background-color:rgb(43, 38, 53); border: 1px solid #797979; color: #fff; border-radius: 2px;"></textarea>
         </div>
         <div class="modal-footer mx-5" style="background-color: rgb(58, 56, 71); background-repeat: no-repeat; background-image: url(/static/other/observatory_lower.png)">
-          <div class="col" style="text-align: left;">
-            <a class="fw-bold" style="color:#56ff64; margin-left: 60px;" href="#">Read Community Rules</a>
-          </div>          
-          <p class="text-white me-3">500</p>
-          <button type="submit" class="btn btn-success fw-bold" data-bs-dismiss="modal">Post</i></button>
+            <div class="col" style="text-align: left;">
+                <a class="fw-bold" style="color:#56ff64; margin-left: 60px;" href="#">Read Community Rules</a>
+            </div>          
+            <p id="char-count" class="text-white me-3">500</p>
+            <button type="submit" class="btn btn-success fw-bold" data-bs-dismiss="modal">Post</button>
         </div>
-      </form>
+    </form>
     {% else %}
       <div class="text-white mt-3">
         <p class="fw-bold">You must be logged in to comment. <a href="/login" style="color:#56ff64">Sign In</a> or <a href="/register" style="color:#56ff64">Sign Up</a>.</p>

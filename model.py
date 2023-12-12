@@ -26,7 +26,7 @@ class Model():
         cur.execute("""SELECT tags.id, image.id, tags.tag_name, image.filename, COUNT(image.id) AS image_count FROM image_tags
                         left JOIN image ON image_tags.image_id = image.id
                         left JOIN tags ON image_tags.tag_id = tags.id 
-                        GROUP BY tags.id ORDER BY RAND() limit 12""")
+                        GROUP BY tags.id ORDER BY RAND() limit 15""")
         return cur.fetchall()
 
     #mengambil gambar sorting tanggal terbaru
@@ -142,6 +142,47 @@ class Model():
                         image.input_date asc;
                     """, (userId, userId))
         return cur.fetchall()
+
+
+    def get_images_fav(userId):
+        cur = db.cursor()
+        cur.execute("""SELECT
+                            tags.id AS tag_id,
+                            image.id AS image_id,
+                            tags.tag_name,
+                            image.filename,
+                            image.title,
+                            image.desc,
+                            image.input_date,
+                            users.username,
+                            COALESCE(SUM(iv.view_count), 0) AS total_views, 
+                            image.score,
+                            CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                            COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
+                        FROM
+                            image_tags
+                        LEFT JOIN
+                            image ON image_tags.image_id = image.id
+                        LEFT JOIN
+                            users ON users.id = image.user_id
+                        LEFT JOIN
+                            tags ON image_tags.tag_id = tags.id
+                        LEFT JOIN
+                            image_views iv ON image.id = iv.image_id
+                        LEFT JOIN
+                            image_like ON image.id = image_like.image_id
+                            AND (image_like.user_id = %s OR %s IS NULL)     
+                        LEFT JOIN
+                            img_comments ON image.id = img_comments.image_id                       
+                        GROUP BY
+                            tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
+                        HAVING
+                            liked_by_user = 1
+                        ORDER BY
+                            image.input_date DESC;
+                        """, (userId, userId))
+        return cur.fetchall()
+
 
     #mengambil gambar secara specific
     def get_images_specific(title, userId):
@@ -416,6 +457,74 @@ class Model():
                             image.input_date DESC""") 
 
         return cur.fetchall()
+
+
+    def insert_recent_opened_image(userId, imageId, recent):
+        cur = db.cursor()
+
+        # Insert new activity, ignoring if there's a duplicate key
+        insert_query = """
+            INSERT IGNORE INTO activity (user_id, image_id, activity_date)
+            VALUES (%s, %s, %s)
+        """
+
+        # If there's a duplicate key, update the timestamp
+        update_query = """
+            UPDATE activity
+            SET activity_date = %s
+            WHERE user_id = %s AND image_id = %s
+        """
+
+        # Execute the INSERT query
+        cur.execute(insert_query, (userId, imageId, recent))
+
+        # Execute the UPDATE query
+        cur.execute(update_query, (recent, userId, imageId))
+
+        db.commit()
+
+    def get_recent_opened_image(userId, limit=10):
+        cur = db.cursor()
+        cur.execute("""SELECT
+                            tags.id AS tag_id,
+                            image.id AS image_id,
+                            tags.tag_name,
+                            image.filename,
+                            image.title,
+                            image.desc,
+                            image.input_date,
+                            users.username,
+                            COALESCE(SUM(iv.view_count), 0) AS total_views, 
+                            image.score,
+                            CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                            COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
+                        FROM
+                            image_tags
+                        LEFT JOIN
+                            image ON image_tags.image_id = image.id
+                        LEFT JOIN
+                            users ON users.id = image.user_id
+                        LEFT JOIN
+                            tags ON image_tags.tag_id = tags.id
+                        LEFT JOIN
+                            image_views iv ON image.id = iv.image_id
+                        LEFT JOIN
+                            image_like ON image.id = image_like.image_id
+                            AND (image_like.user_id = %s OR %s IS NULL)
+                        LEFT JOIN
+                            img_comments ON image.id = img_comments.image_id
+                        LEFT JOIN
+                            activity ON image.id = activity.image_id  -- Assuming user_activity has content_id column
+                        WHERE
+                            activity.user_id = %s  -- Filter by the specific user's activity
+                        GROUP BY
+                            tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
+                        ORDER BY
+                            activity.activity_date DESC    -- Order by the timestamp of the user activity
+                        LIMIT %s;
+                        """, (userId, userId, userId, limit))
+        return cur.fetchall()
+
 
     #mengambil data dari table tags
     def get_tags():

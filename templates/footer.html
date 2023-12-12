@@ -164,7 +164,20 @@ $(document).ready(function () {
         }); 
     });
 
-
+    $(document).ready(function() {
+        // Clear textarea on page load or refresh
+        $("#comment-text").val('');
+        // Attach input event handler to the textarea
+        $("#comment-text").on("input", function() {
+            var maxChars = 500;
+            var charCount = Math.max(0, maxChars - $(this).val().length);
+            $("#char-count").text(charCount);
+            // Disable input if character limit is reached
+            if (charCount <= 0) {
+                $(this).val($(this).val().substr(0, maxChars));
+            }
+        });
+    });
 
 </script>
 </html>

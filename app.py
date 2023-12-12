@@ -38,7 +38,7 @@ def require_api_token(func):
             session.clear()
             session["msg_color"] = "warning"
             flash("Token Expired. Please log in again.")
-            return redirect(url_for("newest"))
+            return redirect(url_for("index"))  # Change "newest" to the appropriate route ('/') in your application
         except jwt.InvalidTokenError:
             session.clear()
             session["msg_color"] = "danger"
@@ -183,7 +183,7 @@ def newest():
     randLine = newMdl.funnyLine()
     randBG = randint(1,9)
     getImageTags = newMdl.get_imagetags()
-    getImagesNew = newMdl.get_images_newest(session["uid"])
+    getImagesNew = newMdl.get_images_newest(session.get("uid")) if session and "uid" in session else newMdl.get_images_newest(None)
     getTags = newMdl.get_tags()
     getTotal = newMdl.count_images()
 
@@ -197,7 +197,7 @@ def randomz():
     randLine = newMdl.funnyLine()
     randBG = randint(1,9)
     getImageTags = newMdl.get_imagetags()
-    getImagesNew = newMdl.get_images_random(session["uid"])
+    getImagesNew = newMdl.get_images_random(session.get("uid")) if session and "uid" in session else newMdl.get_images_random(None)
     getTags = newMdl.get_tags()
     getTotal = newMdl.count_images()
 
@@ -211,7 +211,7 @@ def oldest():
     randLine = newMdl.funnyLine()
     randBG = randint(1,9)
     getImageTags = newMdl.get_imagetags()
-    getImagesNew = newMdl.get_images_oldest(session["uid"])
+    getImagesNew = newMdl.get_images_oldest(session.get("uid")) if session and "uid" in session else newMdl.get_images_oldest(None)
     getTags = newMdl.get_tags()
     getTotal = newMdl.count_images()
 
@@ -241,7 +241,8 @@ def search():
     randBG = randint(1,9)
     getImageTags = newMdl.get_imagetags()
     input_search = request.form["input_search"]
-    getImageSpecific = newMdl.get_images_specific(input_search, session["uid"])
+    uid = session.get("uid")
+    getImageSpecific = newMdl.get_images_specific(input_search, uid) if uid else newMdl.get_images_specific(input_search, None)
     getTags = newMdl.get_tags()
     getTotal = newMdl.count_search_based_images(input_search)
     
@@ -256,7 +257,9 @@ def user_page(uname):
     randLine = newMdl.funnyLine()
     randBG = randint(1,9)
     getImageTags = newMdl.get_imagetags()
-    getImageSpecific = newMdl.get_images_specific("@" + uname, session["uid"])
+    uid = session.get("uid")
+    getImageSpecific = newMdl.get_images_specific("@" + uname, uid) if uid else newMdl.get_images_specific("@" + uname, None)
+
     getTags = newMdl.get_tags()
     getTotal = newMdl.count_search_based_images("@" + uname)
     
@@ -308,7 +311,10 @@ def save_image():
     img_name = request.form["title"]
     img_desc = request.form["description"]
     img_image = request.files["image_file"]
-    img_uid = session["uid"]
+    if session["uid"]:
+        img_uid = session["uid"]
+    else:
+        img_uid = None
     pic = img_image.filename
     photo = pic.replace("'", "")
     foto = photo.replace("-","_")
@@ -397,7 +403,7 @@ def save_edited_image():
 def sayonara_image():
     newMdl = mdl
     id = request.form["del_this"]
-    newMdl.delete_imageTag(id)
+    #newMdl.delete_imageTag(id)
     newMdl.delete_image(id)
     session["msg_color"] = "success"
     flash("The image are deleted!")
@@ -410,7 +416,9 @@ def tags(tags):
     randLine = newMdl.funnyLine()
     randBG = randint(1,9)
     getImageTags = newMdl.get_imagetags()
-    getImageSpecific = newMdl.get_tags_based_image(tags, session["uid"])
+    uid = session.get("uid")
+    getImageSpecific = newMdl.get_tags_based_image(tags, uid) if uid else newMdl.get_tags_based_image(tags, None)
+
     getTags = newMdl.get_tags()
     getTotal = newMdl.count_tags_based_images(tags)
 
@@ -435,6 +443,39 @@ def posts():
     line = randLine, bg = randBG, newImg = getImageSpecific, searched = "user " + session["uname"], slect = "Newest",
     imgtgs = getImageTags, kolor = kolours, tags = getTags, total = getTotal)
 
+
+@app.route("/fav")
+@require_api_token
+def fav():
+    newMdl = mdl
+    randLine = newMdl.funnyLine()
+    randBG = randint(1,9)
+    getImageTags = newMdl.get_imagetags()
+    input_search = "@" + session["uname"]
+    getImageFav = newMdl.get_images_fav(session["uid"])
+    getTags = newMdl.get_tags()
+    getTotal = newMdl.count_search_based_images(input_search)
+    
+    return render_template("index.html", 
+    line = randLine, bg = randBG, newImg = getImageFav, searched = "user " + session["uname"], slect = "Newest",
+    imgtgs = getImageTags, kolor = kolours, tags = getTags, total = getTotal)
+
+@app.route("/history")
+@require_api_token
+def history():
+    newMdl = mdl
+    randLine = newMdl.funnyLine()
+    randBG = randint(1,9)
+    getImageTags = newMdl.get_imagetags()
+    input_search = "@" + session["uname"]
+    getImageHist = newMdl.get_recent_opened_image(session["uid"])
+    getTags = newMdl.get_tags()
+    getTotal = newMdl.count_search_based_images(input_search)
+    
+    return render_template("index.html", 
+    line = randLine, bg = randBG, newImg = getImageHist, searched = "user " + session["uname"], slect = "Newest",
+    imgtgs = getImageTags, kolor = kolours, tags = getTags, total = getTotal)
+
 #route ke page image detail
 @app.route("/i/<int:im_id>")
 def images(im_id):
@@ -443,10 +484,15 @@ def images(im_id):
     randBG = randint(1,9)
     getImageTags = newMdl.get_imagetags()
     getImageSpecific = newMdl.get_id_based_image(im_id)
-    getImagesNew = newMdl.get_images_newest(session["uid"])
+    uid = session.get("uid")
+    getImagesNew = newMdl.get_images_newest(uid) if uid is not None else newMdl.get_images_newest(None)
+
     getTags = newMdl.get_tags()
     getComments = newMdl.get_comments(im_id)
     sumComments = newMdl.sum_comments(im_id)
+    uid = session.get("uid")
+    newMdl.insert_recent_opened_image(uid, im_id, dt.datetime.now()) if uid is not None else newMdl.insert_recent_opened_image(None, im_id, dt.datetime.now())
+
     
     return render_template("images.html", 
     line = randLine, bg = randBG, newImg = getImagesNew, specImg = getImageSpecific,
