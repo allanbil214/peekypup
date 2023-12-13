@@ -8,6 +8,34 @@ from flask_uploads import UploadSet, configure_uploads, IMAGES
 import jwt
 import datetime as dt
 from werkzeug.datastructures import FileStorage
+from clarifai_grpc.grpc.api import service_pb2
+from clarifai_grpc.grpc.api.resources_pb2 import Input, Image, Data
+from clarifai_grpc.channel.clarifai_channel import ClarifaiChannel
+from clarifai_grpc.grpc.api.status import status_code_pb2
+from clarifai_grpc.grpc.api import resources_pb2, service_pb2, service_pb2_grpc
+import os
+from werkzeug.utils import secure_filename
+
+##################################################################################################
+# In this section, we set the user authentication, user and app ID, model details, and the URL
+# of the image we want as an input. Change these strings to run your own example.
+#################################################################################################
+
+# Your PAT (Personal Access Token) can be found in the portal under Authentification
+PAT = 'e6ce90703bd74b2ba659181a2fc4b69a'
+# Specify the correct user_id/app_id pairings
+# Since you're making inferences outside your app's scope
+USER_ID = 'clarifai'
+APP_ID = 'main'
+# Change these to whatever model and image URL you want to use
+MODEL_ID = 'moderation-recognition'
+MODEL_VERSION_ID = 'aa8be956dbaa4b7a858826a84253cab9'
+IMAGE_URL = 'https://samples.clarifai.com/metro-north.jpg'
+
+##################################################################################################
+# In this section, we set the user authentication, user and app ID, model details, and the URL
+# of the image we want as an input. Change these strings to run your own example.
+#################################################################################################
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "123"
@@ -173,7 +201,6 @@ def increment_view_count():
 # < home route
 @app.route("/")
 def index():
-    session["uid"] = None
     session["msg_color"] = "secondary"
     return redirect(url_for("newest"))
 
@@ -311,18 +338,73 @@ def save_image():
     img_name = request.form["title"]
     img_desc = request.form["description"]
     img_image = request.files["image_file"]
-    if session["uid"]:
-        img_uid = session["uid"]
-    else:
-        img_uid = None
+    img_image2 = request.files["image_file"]
+    img_uid = session.get("uid") if session.get("uid") else None
     pic = img_image.filename
     photo = pic.replace("'", "")
     foto = photo.replace("-","_")
     picture = foto.replace(" ", "_")
     if picture.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
-        save_photo = photos.save(img_image, name=picture)
+
+        # Content moderation using Clarifai
+        image_filename = secure_filename(img_image.filename)  # Ensure a safe filename
+        image_path = os.path.join(app.config['UPLOADED_PHOTOS_DEST'], image_filename)  # Assuming UPLOADED_PHOTOS_DEST is your upload folder
+        img_image.save(image_path)  # Save the image to the specified path
+        with open(image_path, "rb") as f:
+            image_content = f.read()
+
+        clarifai_pat = PAT
+        clarifai_channel = ClarifaiChannel.get_grpc_channel()
+        clarifai_stub = service_pb2_grpc.V2Stub(clarifai_channel)
+
+        clarifai_metadata = (('authorization', 'Key ' + clarifai_pat),)
+
+        clarifai_request = service_pb2.PostModelOutputsRequest(
+            user_app_id=resources_pb2.UserAppIDSet(user_id=USER_ID, app_id=APP_ID),
+            model_id='moderation-recognition',
+            version_id='aa8be956dbaa4b7a858826a84253cab9',
+            inputs=[Input(data=Data(image=Image(base64=image_content)))]
+        )
+
+        clarifai_response = clarifai_stub.PostModelOutputs(clarifai_request, metadata=clarifai_metadata)
+
+        if clarifai_response.status.code != status_code_pb2.SUCCESS:
+            print(clarifai_response.status)
+            raise Exception("Clarifai content moderation failed, status: " + clarifai_response.status.description)
+
+        clarifai_output = clarifai_response.outputs[0]
+        for concept in clarifai_output.data.concepts:
+            print(f"Concept: {concept.name}, Value: {concept.value}")
+
+        # Check if Clarifai detected any unsafe content
+        if any(concept.name.lower() == 'suggestive' and concept.value > 0.7 for concept in clarifai_output.data.concepts):
+            flash("Image contains suggestive content. Please upload a different image.")
+            session["msg_color"] = "danger"
+            return redirect(url_for("newest"))
+
+        elif any(concept.name.lower() == 'explicit' and concept.value > 0.7 for concept in clarifai_output.data.concepts):
+            flash("Image contains explicit content. Please upload a different image.")
+            session["msg_color"] = "danger"
+            return redirect(url_for("newest"))
+
+        elif any(concept.name.lower() == 'drug' and concept.value > 0.7 for concept in clarifai_output.data.concepts):
+            flash("Image contains drug content. Please upload a different image.")
+            session["msg_color"] = "danger"
+            return redirect(url_for("newest"))
+
+        elif any(concept.name.lower() == 'gore' and concept.value > 0.7 for concept in clarifai_output.data.concepts):
+            flash("Image contains gore content. Please upload a different image.")
+            session["msg_color"] = "danger"
+            return redirect(url_for("newest"))
+                              
+        # saving the image
+        save_photo = photos.save(img_image2, name=picture)
         if save_photo:
             newMdl.add_newImages(new_imgId, img_name, img_desc, img_uid, picture, dt.datetime.now())
+        else:
+            flash("Failed to save image.")
+            session["msg_color"] = "danger"
+            return redirect(url_for("newest"))
     else:
         flash("Wrong file type!")
         session["msg_color"] = "danger"
