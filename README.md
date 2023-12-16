@@ -1,38 +1,46 @@
 # Front-End Design Project
 
 ## Project Description
-This project is a collaborative effort to develop the front-end interface for an application. We focus on creating an attractive and user-friendly user interface (UI) to enhance the end-user experience.
-
-## Key Features
-- **Intuitive Navigation:** User-friendly navigation design to ensure users can quickly move between pages.
-- **Responsive Design:** A responsive interface to support various devices, including desktops, tablets, and phones.
-- **Aesthetic Appeal:** Use of modern design elements and aesthetics to create an enjoyable visual experience.
+This project is a collaborative effort to develop an image hosting website. We focus on creating an attractive and user-friendly user interface (UI) to enhance the end-user experience.
 
 ## Technologies Used
-- **HTML/CSS/JavaScript:** Implementing standard web technologies to build the user interface.
-- **Framework (if used):** If a framework such as React, Angular, or Vue is used, include relevant information.
+- **HTML/CSS/JQuery:**
+- **Flask:**
 
-## Project Structure
----
+# Database Relations
+Here's an overview of the database relations:
 
+![Database Diagram](https://i.imgur.com/fjVS2sS.png)
 
+## Prerequisites
+Before running the project, ensure you have Python 3.8.8 installed.
+
+### Installation
+1. **Install Python 3.8.8:**
+   - Download and install Python 3.8.8 from the [official Python website](https://www.python.org/downloads/release).
+
+2. **Install Required Modules from req.txt:**
+   - Open a terminal or command prompt.
+   - Navigate to the project directory.
+   - Run the following command to install the required modules:
+     ```bash
+     pip install --force-reinstall -r req.txt
+     ```
+     or, if you have multiple Python versions:
+     ```bash
+     py -3.8 -m pip install -r req.txt
+     ```
 
 ## How to Run the Project
 1. Clone the repository to your local machine.
-2. Open the `index.html` file in a browser to view the interface.
+2. Import the database from `squek.sql`
+3. Open the `app.py` file.
+4. In your browser open `http://127.0.0.1:5000`
 
-## Contribution
-If you wish to contribute to this project, please follow these steps:
-1. Fork this repository.
-2. Create a new branch: `git checkout -b new-feature`.
-3. Commit your changes: `git commit -m 'Adding a new feature'`.
-4. Push to the branch: `git push origin new-feature`.
-5. Create a pull request.
-
-## License
-This project is licensed under the [MIT License](LICENSE).
-
-## Contact
-If you have any questions or suggestions, please contact us at [email@example.com](mailto:email@example.com).
+## Contributors
+1. Allan Bil Faqih
+2. Ananda Rizki Dani
+3. Anggel
+4. Husni
 
 Thank you for visiting our project!
