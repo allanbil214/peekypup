@@ -165,6 +165,164 @@ $(document).ready(function () {
     });
 
     $(document).ready(function() {
+      // Functionality for Download
+      $(".download-link").click(function() {
+        // Assuming you want to download the image associated with the clicked link
+        var imageUrl = $(this).closest(".card").find(".card-header").css("background-image").replace(/url\(['"]?(.*?)['"]?\)/i, "$1");
+        
+        // Open a confirmation modal for download
+        openConfirmationModal("Download", "Download the image?", function() {
+          // Add your download logic here
+          window.open(imageUrl, "_blank");
+        });
+      });
+
+    // Functionality for Download Image button
+    $(".download-image").click(function() {
+      // Get the fakeimg source
+      var imageUrl = $(".fakeimg img").attr("src");
+      
+      // Open a confirmation modal for download
+      openConfirmationModalFakeImg("Download", "Download the image?", function() {
+        // Add your download logic here
+        window.open(imageUrl, "_blank");
+      });
+    });
+
+      // Functionality for Copy Link
+      $(".copy-link").click(function() {
+        // Getting the post link associated with the clicked link
+        var postLink = $(this).closest(".card").find("a[href^='/i/']").attr("href");
+
+        // Creating a temporary input element to copy the URL
+        var tempInput = $("<input>");
+        $("body").append(tempInput);
+        tempInput.val(window.location.origin + postLink).select();
+        document.execCommand("copy");
+        tempInput.remove();
+
+        // Open a modal indicating successful copy
+        openModal("Link Copied", "Link copied successfully!");
+      });
+
+      // Functionality for Copy Current Page Link
+      $(".copy-link2").click(function() {
+        // Creating a temporary input element to copy the URL
+        var tempInput = $("<input>");
+        $("body").append(tempInput);
+        tempInput.val(window.location.href).select();
+        document.execCommand("copy");
+        tempInput.remove();
+
+        // Open a modal indicating successful copy
+        openModal("Link Copied", "Link copied successfully!");
+      });
+
+
+      // Function to open a simple modal
+      function openModal(title, content) {
+        var modalHtml = `
+          <div class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content" style="background-color: #303030;">
+                <div class="modal-header">
+                  <h5 class="modal-title text-white">${title}</h5>
+                </div>
+                <div class="modal-body text-center">
+                  <p class="text-white">${content}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+      // Remove any existing modals
+      $(".modal").remove();
+      
+      // Append the new modal to the body and show it
+      $("body").append(modalHtml);
+      var modal = $(".modal").modal("show");
+
+      // Close the modal when clicked anywhere on the popup
+      modal.on("click", function() {
+        modal.modal("hide");
+        if (typeof onClose === "function") {
+          onClose();
+        }
+      });
+    }
+      // Function to open a confirmation modal
+      function openConfirmationModal(title, content, onConfirm) {
+        var modalHtml = `
+          <div class="modal text-white" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content" style="background-color: #303030;">
+                <div class="modal-header">
+                  <h5 class="modal-title text-center">${title}</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                  <p>${content}</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal" id="confirmButton">Confirm</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Remove any existing modals
+        $(".modal").remove();
+
+        // Append the new modal to the body and show it
+        $("body").append(modalHtml);
+        $(".modal").modal("show");
+        // Add click event handler to the "Yes" button
+        $("#confirmButton").on("click", onConfirm);
+      }
+
+        // Function to open a confirmation modal
+        function openConfirmationModalFakeImg(title, content, onConfirm) {
+          var modalHtml = `
+            <div class="modal text-white" tabindex="-1" role="dialog">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content" style="background-color: #303030;">
+                  <div class="modal-header">
+                    <h5 class="modal-title text-center">${title}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body text-center">
+                    <p>${content}</p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal" id="confirmButton">Confirm</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Remove any existing modals
+          $(".modal").remove();
+
+          // Append the new modal to the body and show it
+          $("body").append(modalHtml);
+          $(".modal").modal("show");
+
+          // Add click event handler to the "Yes" button
+          $("#confirmButton").on("click", onConfirm);
+        }
+  });
+
+
+
+
+
+
+    $(document).ready(function() {
         // Clear textarea on page load or refresh
         $("#comment-text").val('');
         // Attach input event handler to the textarea

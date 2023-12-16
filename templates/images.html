@@ -160,8 +160,19 @@
     
       <hr style="color: #fff;">
 
-      <div class="fakeimg">
-        <img src="/static/img/{{y.3}}" width="95%">
+      <div class="fakeimg position-relative">
+        <img src="/static/img/{{y.3}}" width="100%">
+      
+        <!-- Dropdown for Share options -->
+        <div class="dropdown" style="position: absolute; top: 10px; right: 10px;">
+          <button class="btn" style="background-color: #30303088; " type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="bi bi-share-fill" style="color: #4ae657; font-weight: bold;"></span>
+          </button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item download-image" href="#" style="color: #fff;">Download</a>
+            <a class="dropdown-item copy-link2" href="#" style="color: #fff;">Copy Link</a>
+          </div>
+        </div>
       </div>
       {% if y.5 %}
       <div class="mb-5">
