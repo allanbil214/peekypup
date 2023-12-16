@@ -1,4 +1,5 @@
-# Front-End Design Project
+# Front-End Design Project | PeekyPup (used to be Picturefy)
+![PeekyPup Logo](https://i.imgur.com/ufQVWCV.png)
 
 ## Project Description
 This project is a collaborative effort to develop an image hosting website. We focus on creating an attractive and user-friendly user interface (UI) to enhance the end-user experience.
