@@ -166,58 +166,45 @@ $(document).ready(function () {
 
     $(document).ready(function() {
       // Functionality for Download
-      $(".download-link").click(function() {
-        // Assuming you want to download the image associated with the clicked link
+      $(".download-link").click(function(e) {
+        e.preventDefault(); // Prevent the default anchor behavior
         var imageUrl = $(this).closest(".card").find(".card-header").css("background-image").replace(/url\(['"]?(.*?)['"]?\)/i, "$1");
-        
-        // Open a confirmation modal for download
         openConfirmationModal("Download", "Download the image?", function() {
-          // Add your download logic here
           window.open(imageUrl, "_blank");
         });
       });
 
-    // Functionality for Download Image button
-    $(".download-image").click(function() {
-      // Get the fakeimg source
-      var imageUrl = $(".fakeimg img").attr("src");
-      
-      // Open a confirmation modal for download
-      openConfirmationModalFakeImg("Download", "Download the image?", function() {
-        // Add your download logic here
-        window.open(imageUrl, "_blank");
+      // Functionality for Download Image button
+      $(".download-image").click(function(e) {
+        e.preventDefault(); // Prevent the default anchor behavior
+        var imageUrl = $(".fakeimg img").attr("src");
+        openConfirmationModalFakeImg("Download", "Download the image?", function() {
+          window.open(imageUrl, "_blank");
+        });
       });
-    });
 
       // Functionality for Copy Link
-      $(".copy-link").click(function() {
-        // Getting the post link associated with the clicked link
+      $(".copy-link").click(function(e) {
+        e.preventDefault(); // Prevent the default anchor behavior
         var postLink = $(this).closest(".card").find("a[href^='/i/']").attr("href");
-
-        // Creating a temporary input element to copy the URL
         var tempInput = $("<input>");
         $("body").append(tempInput);
         tempInput.val(window.location.origin + postLink).select();
         document.execCommand("copy");
         tempInput.remove();
-
-        // Open a modal indicating successful copy
         openModal("Link Copied", "Link copied successfully!");
       });
 
       // Functionality for Copy Current Page Link
-      $(".copy-link2").click(function() {
-        // Creating a temporary input element to copy the URL
+      $(".copy-link2").click(function(e) {
+        e.preventDefault(); // Prevent the default anchor behavior
         var tempInput = $("<input>");
         $("body").append(tempInput);
         tempInput.val(window.location.href).select();
         document.execCommand("copy");
         tempInput.remove();
-
-        // Open a modal indicating successful copy
         openModal("Link Copied", "Link copied successfully!");
       });
-
 
       // Function to open a simple modal
       function openModal(title, content) {
