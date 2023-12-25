@@ -34,7 +34,7 @@ Before running the project, ensure you have Python 3.8.8 installed.
 
 ## How to Run the Project
 1. Clone the repository to your local machine.
-2. Import the database from `squek.sql`
+2. Import the database from `squek.sql` (personally i'm using HeidiSQL)
 3. Open the `app.py` file.
 4. In your browser open `http://127.0.0.1:5000`
 
