@@ -15,6 +15,9 @@ from clarifai_grpc.grpc.api.status import status_code_pb2
 from clarifai_grpc.grpc.api import resources_pb2, service_pb2, service_pb2_grpc
 import os
 from werkzeug.utils import secure_filename
+from flask_mail import Mail, Message
+from validate_email_address import validate_email
+import random
 
 ##################################################################################################
 # In this section, we set the user authentication, user and app ID, model details, and the URL
@@ -49,6 +52,21 @@ kolours = ["rgb(25, 62, 68, 0.95)", "rgb(99, 56, 117, 0.95)",
     "rgb(118, 40, 40, 0.95)", "rgb(80, 32, 123, 0.95)", "rgb(77, 84, 154, 0.95)",
     "rgb(183, 92, 103, 0.95)", "rgb(18, 149, 166, 0.95)"]
 
+# Configure Flask-Mail settings
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+app.config['MAIL_USERNAME'] = 'allanbilfaqih214@gmail.com'  # Replace with your Gmail address
+app.config['MAIL_PASSWORD'] = 'pucq qesv pacg nary'  # Replace with your Gmail password
+app.config['MAIL_DEFAULT_SENDER'] = 'allanbilfaqih214@gmail.com'  # Replace with your Gmail address
+
+
+mail = Mail(app)
+
+# A dictionary to store verification codes for email addresses
+email_verification_codes = {}
+
 # fungsi jwt dan session
 def clear_session_on_startup():
     session.clear()
@@ -78,7 +96,7 @@ def require_api_token(func):
     return check_token
 
 #############################################################################################################
-#PICTUREFY PAGES
+#PEEKYPUP PAGES
 #############################################################################################################
 
 #logout
@@ -102,31 +120,79 @@ def registering():
     email = request.form["email"]
     pwd = request.form["password"]
     repwd = request.form["repassword"]
-    if(pwd == repwd):
-        checking_uname = newMdl.check_username(uname)
-        checking_email = newMdl.check_email(email)
-        if(checking_uname[0][0] == 0):
-            if(checking_email[0][0] == 0):
-                if(newMdl.registering(uname, pwd, dt.datetime.now(), 0, email)):
-                    session["msg_color"] = "success"
-                    flash("Sign Up Success!")
-                    return redirect(url_for("login"))
-                else:
-                    session["msg_color"] = "danger"
-                    flash("Something's Wrong! Sorry fo the inconveniences.")
-                    return redirect(url_for("register"))
-            else:
-                session["msg_color"] = "warning"
-                flash("Someone already used the Email.")
-                return redirect(url_for("register"))  
-        else:
-            session["msg_color"] = "warning"
-            flash("Username is not correct.")
-            return redirect(url_for("register"))            
-    else:
+
+    if not validate_email(email):
         session["msg_color"] = "warning"
-        flash("Password must be same!")
+        flash("Invalid email address.")
         return redirect(url_for("register"))
+
+    # Generate a random verification code
+    verification_code = str(random.randint(1000, 9999))
+
+    # Store the verification code for this email
+    email_verification_codes[email] = verification_code
+
+    session["registration_username"] = uname
+    session["registration_password"] = pwd
+
+    # Send the verification code to the user
+    send_verification_email(email, verification_code)
+
+    # Add a message to inform the user
+    session["msg_color"] = "info"
+    flash("A verification code has been sent to your email. Please check your inbox.")
+
+    # Redirect the user to a verification page where they can enter the code
+    return redirect(url_for("verify_email", email=email))
+
+def send_verification_email(email, verification_code):
+    subject = "Email Verification Code"
+    body = f"Your verification code is: {verification_code}"
+
+    message = Message(subject=subject, recipients=[email], body=body)
+
+    try:
+        mail.send(message)
+    except Exception as e:
+        # Handle email sending failure, e.g., log the error
+        print(f"Error sending email: {e}")
+        # You might want to redirect the user to a page informing them to try again
+        session["msg_color"] = "danger"
+        flash("Error sending verification code. Please try again.")
+        return redirect(url_for("register"))
+
+@app.route("/verify_email/<email>", methods=["GET", "POST"])
+def verify_email(email):
+    if request.method == "POST":
+        # User submitted the verification code
+        user_code = request.form["verification_code"]
+        stored_code = email_verification_codes.get(email)
+
+        # Retrieve values from the session
+        uname = session.get("registration_username")
+        pwd_from_session = session.get("registration_password")
+
+        if user_code == stored_code:
+            # Verification successful, proceed with registration
+            newMdl = mdl
+
+            # Your registration logic here...
+            if(newMdl.registering(uname, pwd_from_session, dt.datetime.now(), 0, email)):
+                session["msg_color"] = "success"
+                flash("Sign Up Success!")
+                return redirect(url_for("login"))
+            else:
+                session["msg_color"] = "danger"
+                flash("Something's Wrong! Sorry fo the inconveniences.")
+                return redirect(url_for("register"))
+        else:
+            # Incorrect verification code
+            session["msg_color"] = "danger"
+            flash("Incorrect verification code. Please try again.")
+            return redirect(url_for("verify_email", email=email))
+
+    # Render the verification code input form
+    return render_template("verify_email.html", email=email)
 
 # login page route
 @app.route("/login")
@@ -135,6 +201,7 @@ def login():
 
 @app.route("/loggin_in", methods=["POST"])
 def loggin_in():
+    clear_session_on_startup()
     newMdl = mdl()
     username = request.form["username"]
     password = request.form["password"]
