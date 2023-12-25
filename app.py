@@ -119,7 +119,6 @@ def registering():
     uname = request.form["username"]
     email = request.form["email"]
     pwd = request.form["password"]
-    repwd = request.form["repassword"]
 
     if not validate_email(email):
         session["msg_color"] = "warning"
@@ -194,6 +193,38 @@ def verify_email(email):
     # Render the verification code input form
     return render_template("verify_email.html", email=email)
 
+@app.route("/profile")
+@require_api_token
+def profile():
+    # Retrieve user data from the session or database
+    user_data = {
+        "username": session.get("uname"),
+        "email": session.get("email"),  # Assuming you store email in the session
+        "password": session.get("pwd")
+        # Add other user data fields as needed
+    }
+
+    return render_template("profile.html", user=user_data)
+
+@app.route("/update_profile", methods=["POST"])
+@require_api_token
+def update_profile():
+    newMdl = mdl
+    username = request.form.get("username")
+    password = request.form.get("newpassword")
+    # Retrieve other fields as needed
+
+    # Update user information in the database
+    uid = session.get("uid")
+    if uid is not None:
+        newMdl.update_user_profile(uid, username, password)
+        # Update user session data if needed
+        session["uname"] = username
+        session["pwd"] = password
+
+    # Redirect back to the profile page
+    return redirect(url_for("profile"))
+
 # login page route
 @app.route("/login")
 def login():
@@ -225,6 +256,7 @@ def loggin_in():
                 session["pwd"] = row[2]
                 session["regtime"] = row[3]
                 session["isadmin"] = row[4]
+                session["email"] = row[5]
                 session["msg_color"] = "success"
                 flash("Logged In!")
                 return redirect(url_for("auth"))
@@ -284,6 +316,34 @@ def newest():
     return render_template("index.html",
     line = randLine, bg = randBG, newImg = getImagesNew, slect = "Newest", msg_color = session["msg_color"],
     imgtgs = getImageTags, kolor = kolours, tags = getTags, total = getTotal)
+
+@app.route("/home/trending")  # Adjust the route as needed
+def trending():
+    newMdl = mdl
+    randLine = newMdl.funnyLine()
+    randBG = randint(1, 9)
+    getImageTags = newMdl.get_imagetags()
+    getImagesTrending = newMdl.get_images_trending(session.get("uid")) if session and "uid" in session else newMdl.get_images_trending(None)
+    getTags = newMdl.get_tags()
+    getTotal = newMdl.count_images()
+
+    return render_template("index.html",
+                           line=randLine, bg=randBG, newImg=getImagesTrending, slect="Trending", msg_color=session["msg_color"],
+                           imgtgs=getImageTags, kolor=kolours, tags=getTags, total=getTotal)
+
+@app.route("/home/hot")  # Adjust the route as needed
+def hot():
+    newMdl = mdl
+    randLine = newMdl.funnyLine()
+    randBG = randint(1, 9)
+    getImageTags = newMdl.get_imagetags()
+    getImagesHot = newMdl.get_images_hot(session.get("uid")) if session and "uid" in session else newMdl.get_images_hot(None)
+    getTags = newMdl.get_tags()
+    getTotal = newMdl.count_images()
+
+    return render_template("index.html",
+                           line=randLine, bg=randBG, newImg=getImagesHot, slect="Hot", msg_color=session["msg_color"],
+                           imgtgs=getImageTags, kolor=kolours, tags=getTags, total=getTotal)
 
 @app.route("/home/random")
 def randomz():

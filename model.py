@@ -143,6 +143,81 @@ class Model():
                     """, (userId, userId))
         return cur.fetchall()
 
+    def get_images_trending(userId): # trending by views on 1 month interval
+        cur = db.cursor() 
+        cur.execute("""SELECT
+                            tags.id AS tag_id,
+                            image.id AS image_id,
+                            tags.tag_name,
+                            image.filename,
+                            image.title,
+                            image.desc,
+                            image.input_date,
+                            users.username,
+                            COALESCE(SUM(iv.view_count), 0) AS total_views, 
+                            image.score,
+                            CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                            COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
+                        FROM
+                            image_tags
+                        LEFT JOIN
+                            image ON image_tags.image_id = image.id
+                        LEFT JOIN
+                            users ON users.id = image.user_id
+                        LEFT JOIN
+                            tags ON image_tags.tag_id = tags.id
+                        LEFT JOIN
+                            image_views iv ON image.id = iv.image_id
+                            
+                        LEFT JOIN
+                            image_like ON image.id = image_like.image_id
+                            AND (image_like.user_id = %s OR %s IS NULL)     
+                        LEFT JOIN
+                            img_comments ON image.id = img_comments.image_id                       
+                        GROUP BY
+                            tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
+                        ORDER BY
+                            total_views DESC;
+                        """, (userId, userId)) #AND iv.view_date >= NOW() - INTERVAL 1 MONTH
+        return cur.fetchall()
+
+    # Inside your mdl module
+    def get_images_hot(userId):
+        cur = db.cursor()
+        cur.execute("""SELECT
+                        tags.id AS tag_id,
+                        image.id AS image_id,
+                        tags.tag_name,
+                        image.filename,
+                        image.title,
+                        image.desc,
+                        image.input_date,
+                        users.username,
+                        COALESCE(SUM(iv.view_count), 0) AS total_views, 
+                        image.score,
+                        CASE WHEN image_like.user_id IS NOT NULL THEN 1 ELSE 0 END AS liked_by_user,
+                        COALESCE(COUNT(DISTINCT img_comments.cmnt_id), 0) AS total_comments
+                    FROM
+                        image_tags
+                    LEFT JOIN
+                        image ON image_tags.image_id = image.id
+                    LEFT JOIN
+                        users ON users.id = image.user_id
+                    LEFT JOIN
+                        tags ON image_tags.tag_id = tags.id
+                    LEFT JOIN
+                        image_views iv ON image.id = iv.image_id
+                    LEFT JOIN
+                        image_like ON image.id = image_like.image_id
+                        AND (image_like.user_id = %s OR %s IS NULL)    
+                    LEFT JOIN
+                        img_comments ON image.id = img_comments.image_id                                            
+                    GROUP BY
+                        tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
+                    ORDER BY
+                        COUNT(image_like.image_id) DESC;
+                    """, (userId, userId))
+        return cur.fetchall()
 
     def get_images_fav(userId):
         cur = db.cursor()
@@ -484,6 +559,7 @@ class Model():
         db.commit()
 
     def get_recent_opened_image(userId, limit=10):
+        print(userId)
         cur = db.cursor()
         cur.execute("""SELECT
                             tags.id AS tag_id,
@@ -547,6 +623,16 @@ class Model():
         cur = db.cursor()
         cur.execute("""INSERT INTO users (`username`, `password`, `reg_time`, `isadmin`, `email`) 
                     VALUES (%s, %s, %s, %s, %s);""",(username, password, reg_time, isadmin, email,))
+        db.commit()
+        return True
+
+    def update_user_profile(user_id, new_username, new_password):
+        cur = db.cursor()
+        cur.execute("""
+            UPDATE users
+            SET `username` = %s, `password` = %s
+            WHERE `id` = %s;
+        """, (new_username, new_password, user_id))
         db.commit()
         return True
 

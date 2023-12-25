@@ -126,12 +126,15 @@
       </div>
       <!-- Dropdown -->
       <div class="col d-flex align-items-center flex-row-reverse">
-        <select name="sort" id="sort" class="select" style="background-color: #fdfdfd00; font-size: 1.5rem; font-weight: bold; border: none; color: rgba(255, 255, 255, 0.712);" onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
+        <select name="sort" id="sort" class="select" style="background-color: #fdfdfd00; font-size: 1.5rem; font-weight: bold; border: none; color: rgba(255, 255, 255, 0.712); text-align: right;" onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);">
           <option hidden>{{slect}}</option>
+          <option value="trending">Trending</option>
+          <option value="hot">Hot</option>
           <option value="newest">Newest</option>
-          <option value="random">Random</option>
           <option value="oldest">Oldest</option>
+          <option value="random">Random</option>
         </select>
+        
       </div>
     </div>
     <div class="row d-flex justify-content-center post-container">
