@@ -70,6 +70,7 @@ email_verification_codes = {}
 # fungsi jwt dan session
 def clear_session_on_startup():
     session.clear()
+    session["default_color"] = "dark"
 
 def require_api_token(func):
     @wraps(func)
@@ -204,7 +205,22 @@ def profile():
         # Add other user data fields as needed
     }
 
-    return render_template("profile.html", user=user_data)
+    newMdl = mdl
+    randLine = newMdl.funnyLine()
+    randBG = randint(1,9)
+    getImageTags = newMdl.get_imagetags()
+    getImageSpecific = newMdl.get_id_based_image(1)
+    uid = session.get("uid")
+    uname = session.get("uname")
+    getImagesNew = newMdl.get_user_based_image(uname, uid) if uid is not None else newMdl.get_user_based_image(None, None)
+
+    getTags = newMdl.get_tags()
+    getComments = newMdl.get_comments_user(uid)
+    sumComments = newMdl.sum_comments_user(uid)
+    
+    return render_template("profile.html", 
+    line = randLine, bg = randBG, newImg = getImagesNew, user=user_data, specImg = getImageSpecific,
+    imgtgs = getImageTags, kolor = kolours, tags = getTags, comments = getComments, sumcmnt = sumComments)
 
 @app.route("/update_profile", methods=["POST"])
 @require_api_token
@@ -314,7 +330,7 @@ def newest():
     getTotal = newMdl.count_images()
 
     return render_template("index.html",
-    line = randLine, bg = randBG, newImg = getImagesNew, slect = "Newest", msg_color = session["msg_color"],
+    line = randLine, bg = randBG, newImg = getImagesNew, slect = "Newest", msg_color = session.get("msg_color", "default_color"),
     imgtgs = getImageTags, kolor = kolours, tags = getTags, total = getTotal)
 
 @app.route("/home/trending")  # Adjust the route as needed
@@ -356,7 +372,7 @@ def randomz():
     getTotal = newMdl.count_images()
 
     return render_template("index.html", 
-    line = randLine, bg = randBG, newImg = getImagesNew, slect = "Random", msg_color = session["msg_color"],
+    line = randLine, bg = randBG, newImg = getImagesNew, slect = "Random", msg_color = session.get("msg_color", "default_color"),
     imgtgs = getImageTags, kolor = kolours, tags = getTags, total = getTotal)
 
 @app.route("/home/oldest")
@@ -370,7 +386,7 @@ def oldest():
     getTotal = newMdl.count_images()
 
     return render_template("index.html", 
-    line = randLine, bg = randBG, newImg = getImagesNew,  slect = "Oldest", msg_color = session["msg_color"],
+    line = randLine, bg = randBG, newImg = getImagesNew,  slect = "Oldest", msg_color = session.get("msg_color", "default_color"),
     imgtgs = getImageTags, kolor = kolours, tags = getTags, total = getTotal)
 # end home route>
 
@@ -737,7 +753,7 @@ def user_data():
     randBG = randint(1,9)
 
     return render_template("/dashboard/user/data.html", users = get_users, bg = randBG,
-    line = randLine, msg_color = session["msg_color"], total = getTotal)
+    line = randLine, msg_color = session.get("msg_color", "default_color"), total = getTotal)
 
 @app.route("/dashboard/sayonara_emp", methods=["POST"])
 def sayonara_user():
@@ -759,7 +775,7 @@ def image_data():
     randBG = randint(1,9)
 
     return render_template("/dashboard/image/data.html", images = get_images, bg = randBG,
-    line = randLine, msg_color = session["msg_color"], total = getTotal)
+    line = randLine, msg_color = session.get("msg_color", "default_color"), total = getTotal)
 
 if __name__ == "__main__":
     app.before_first_request(clear_session_on_startup)

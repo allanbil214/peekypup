@@ -415,7 +415,7 @@ class Model():
 
 
     def get_user_based_image(uname, userId):
-        cur = db.cursor()        
+        cur = db.cursor()
         y = uname.replace("@", "")
         query = """SELECT
                     tags.id AS tag_id,
@@ -442,7 +442,7 @@ class Model():
                     image_views iv ON image.id = iv.image_id
                 LEFT JOIN
                     image_like ON image.id = image_like.image_id
-                    AND (image_like.user_id = %s OR %s IS NULL)  
+                        AND (image_like.user_id = %s OR %s IS NULL)  
                 LEFT JOIN
                     img_comments ON image.id = img_comments.image_id                                    
                 WHERE
@@ -452,11 +452,12 @@ class Model():
                 ORDER BY
                     image.input_date DESC"""
 
-        params = (userId, userId, f"'%{y}%'")
+        params = (userId, userId, f'%{y}%')
         print("Executing query:", query % params)
         cur.execute(query, params)
-
-        return cur.fetchall()
+        result = cur.fetchall()
+        print("Query result:", result)
+        return result
 
     def get_tags_based_image(title, userId):
         cur = db.cursor()           
@@ -689,6 +690,24 @@ class Model():
                         WHERE image_id={image_id}""")
         return cur.fetchall()
 
+
+    def get_comments_user(uid):
+        cur = db.cursor()
+        #cur.execute(f"""SELECT * FROM img_comments WHERE image_id={image_id} AND user_id={user_id}""")
+        cur.execute(f"""SELECT img_comments.*, users.username, image.title
+                    FROM img_comments
+                    JOIN users ON img_comments.user_id = users.id
+                    JOIN image ON img_comments.image_id = image.id
+                    WHERE img_comments.user_id = {uid};
+                    """)
+        return cur.fetchall()
+
+    def sum_comments_user(uid):
+        cur = db.cursor()
+        cur.execute(f""" SELECT COUNT(*) as comment_count
+                        FROM img_comments
+                        WHERE img_comments.user_id = {uid}""")
+        return cur.fetchall()
 
     ## adding new image view counts
     def add_viewcounts(image_ids, view_date):

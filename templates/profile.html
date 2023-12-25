@@ -1,39 +1,144 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <link rel="icon" href="https://data.apkshub.com/64/com.imgur.mobile/4.4.2.10498/icon.png" type="image/x-icon">
-  <title>PeekyPup: Not owned by Corpo-Rat</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-</head>
+{% include 'header.html' %}
+<body style="background: linear-gradient(#1F1F4B, #292b30); margin: 0; min-height: 100vh;">
 
-<header>
-    <nav class="navbar navbar-expand-sm bg-mod navbar-dark fixed-top" style="height: 64px;" >
-      <div class="container-fluid">
-        <a class="navbar-brand mt-2" style="font-size: small ;" href="/home/newest">
-          <img class="ps-2 pe-1 mb-2" src="https://s.imgur.com/images/access/back-to-imgur.png" alt="PeekyPup"> 
-              back to peekypup
-        </a>
+  <div class="modal fade" id="newPost">
+    <div class="modal-dialog">
+      <div class="modal-content" style="background-image: url(/static/other/observatory_bg.png);">
+  
+        <div class="modal-header text-white">
+          <div class="col"></div>
+          <div class="col-auto text-white ps-4"><h4 class="fw-bold">upload your magic here</h4></div>
+          <div class="col"></div>
+          <button type="button" class="btn-close" style="background-color:#fff;" data-bs-dismiss="modal"></button>
+        </div>
+  
+        <form role="form" enctype=multipart/form-data action="/save_image" method="POST">
+          <div class="modal-body border-0 text-center" style="background-color: rgb(58, 56, 71);">
+            <label class="btn fw-bold text-white m-3">
+              <i class="bi bi-image-fill pe-2"></i> Choose your Photo
+              <input name="image_file" class="image_file" type="file" hidden required>
+              <img class="pt-3" id="modal_img" style="width: 75%;" >
+            </label>
+            <div class="row">
+              <div class="col"><hr style="color: #fff;"></div>
+              <div class="col-auto text-white fw-bold">ALSO</div>
+              <div class="col"><hr style="color: #fff;"></div>
+            </div>
+            <div class="input-group pt-4 ps-5 pe-5 input-group-lg">
+              <input type="text" class="form-control" name="title" placeholder="Image title here..." required
+                style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;">
+            </div>
+            <div class="input-group pt-3 ps-5 pe-5 input-group-lg">
+              <textarea name="description" class="form-control" placeholder="Description..."
+                style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;"></textarea>
+            </div>
+            <div class="input-group pt-3 ps-5 pe-5 input-group-lg">
+              <input type="text" class="form-control" name="tags" placeholder="Select tags or create new tags..." list="tags" required
+                style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;">
+              <datalist id="tags">
+                {%for z in tags%}
+                <option value="{{z.1}}">
+                {%endfor%}
+              </datalist>
+            </div>  
+          </div>
+  
+          <div class="modal-footer" style="background-color: rgb(58, 56, 71); background-image: url(/static/other/observatory_lower.png);">
+            <button type="submit" class="btn btn-success fw-bold" data-bs-dismiss="modal">Submit<i class="bi bi-box-arrow-in-right ps-2"></i></button>
+          </div>
+        </form>
+  
       </div>
-    </nav>
-  </header>
+    </div>
+  </div>
+  
 
-<body style="background-color: #202125;">
-    <section class="vh-100">
+{% for y in specImg %}
+<div class="modal fade" id="editPost">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background-image: url(/static/other/observatory_bg.png);">
+
+      <div class="modal-header text-white">
+        <div class="col"></div>
+        <div class="col-auto text-white ps-4"><h4 class="fw-bold">edit your magic here</h4></div>
+        <div class="col"></div>
+        <button type="button" class="btn-close" style="background-color:#fff;" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form role="form" enctype=multipart/form-data action="/save_edited_image" method="POST">
+        <div class="modal-body border-0 text-center" style="background-color: rgb(58, 56, 71);">
+          <label class="btn fw-bold text-white m-3">
+            <img src="/static/img/{{y.3}}" id="modal_img" style="width: 75%;">
+            <input type="hidden" value="{{ y.1 }}" name="edit_this"/>
+          </label>
+          <div class="row">
+            <div class="col"><hr style="color: #fff;"></div>
+            <div class="col-auto text-white fw-bold">ALSO</div>
+            <div class="col"><hr style="color: #fff;"></div>
+          </div>
+          <div class="input-group pt-4 ps-5 pe-5 input-group-lg">
+            <input type="text" class="form-control" name="title" value="{{y.4}}" placeholder="Image title here..." required
+              style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;">
+          </div>
+          <div class="input-group pt-3 ps-5 pe-5 input-group-lg">
+            <textarea name="description" class="form-control" placeholder="Description..."
+              style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;">{{y.5}}</textarea>
+          </div>
+          <div class="input-group pt-3 ps-5 pe-5 input-group-lg">
+            <input type="text" class="form-control" name="tags" value="{{y.2}}" placeholder="Select tags or create new tags..." list="tags" required
+              style="background-color:rgb(43, 38, 53); border: 0; color: #fff; border-radius: 2px;">
+            <datalist id="tags">
+              {%for z in tags%}
+              <option value="{{z.1}}">
+              {%endfor%}
+            </datalist>
+          </div>  
+        </div>
+
+        <div class="modal-footer" style="background-color: rgb(58, 56, 71); background-image: url(/static/other/observatory_lower.png);">
+          <button type="submit" class="btn btn-success fw-bold" data-bs-dismiss="modal">Submit<i class="bi bi-box-arrow-in-right ps-2"></i></button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- bagian header -->
+<div class="p-5 text-white text-center">
+<!--   <h2 class="pt-4 fw-bold" style="color: #aed8ea;">{{line}}</h2> -->
+</div>
+
+<!-- bagian isi -->
+<div class="container mt-5">
+  <div class="row">
+    <!-- post -->
+    <div class="col-sm-8">
+      <h2 class="fw-bold text-white">
+        Profile Page
+      </h2>
+      <h6 style="color: #b8b8b8; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <a class="pe-1" href="/posts" style="color: #fff;"><i class="bi bi-images pe-2"></i>Posts</a>
+            <i class="bi bi-dot"></i> 
+            <a class="pe-1" href="/fav" style="color: #fff;"><i class="bi bi-journal-album pe-2"></i>Favorites</a>
+            <i class="bi bi-dot"></i> 
+            <a class="pe-1" href="/history" style="color: #fff;"><i class="bi bi-clock-history pe-2"></i>Histories</a>
+        </div>
+    </h6>
+    
+    
+    
+      <hr style="color: #fff;">
+
+      <section>
         <div class="container py-5 h-100">
           <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col col-xl-10">
+            <div class="col">
               <div class="card" style="border-radius: 1rem; background-color: #3a3d42;">
                 <div class="row g-0">
-                  <div class="col-md-6 col-lg-5 d-none d-md-block">
-                    <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/img1.webp"
-                      alt="login form" class="img-fluid" style="border-radius: 1rem 0 0 1rem;" />
-                  </div>
-                  <div class="col-md-6 col-lg-7 d-flex align-items-center">
+                  <div class="col">
                     <div class="card-body p-4 p-lg-5 text-black">
       
                     <form method="POST" action="{{ url_for('update_profile') }}">
@@ -84,11 +189,6 @@
                           <div class="col"><hr style="color: #fff;"></div>
                         </div>
                         <div class="pt-1 mb-4" style="float: right;">
-                            <a class="pe-1" href="/login" style="color: #fff;"><i class="bi bi-images pe-2"></i>Posts</a>
-                            <a class="pe-1" style="color: #fff;">|</a>
-                            <a class="pe-1" href="/login" style="color: #fff;"><i class="bi bi-journal-album pe-2"></i>Favorites</a>
-                            <a class="pe-1" style="color: #fff;">|</a>
-                            <a class="pe-1" href="/login" style="color: #fff;"><i class="bi bi-clock-history pe-2"></i>Histories</a>
                             <button class="btn btn-primary btn-lg btn-block" style="background-color: #5c69ff;" type="submit">Save Changes</button>
                         </div>
       
@@ -109,65 +209,110 @@
         </div>
       </section>
 
-      <script>
-        $(document).ready(function () {
-            $('#newpassword').on('keyup', function () {
-                validatePassword();
-            });
+      <!-- bagian komen -->
+      <!-- Add this form within the existing image details section -->
+     
+      <div class="mt-5">
+        {% for sum in sumcmnt %}
+          <h4 class="fw-bold text-white">{{sum.0}} Comments</h4>
+        {% endfor %}
+        <hr style="color: #fff;"><!-- Rubah dulu lan -->
+      
+        <!-- Check if there are comments -->
+        {% if comments %}
+          <!-- Individual Comment -->
+          {% for cmnt in comments %}
+            <div class="media mt-3 text-white">
+              <div class="media-body">
+                <a class="mt-0 text-white" href="/userpage/{{cmnt.2}}"><span class="fw-bold" style="color:#56ff64">{{cmnt.5}}</span> • <span class="fw-bold" style="color:#56d8ff">{{cmnt.6}}</span> • {{cmnt.4}}</a>
+                <p class="text-white">{{cmnt.3}}</p>
+              </div>
+            </div>
+            <hr style="color: #fff;"><!-- Rubah dulu lan -->
+          {% endfor %}
+        {% else %}
+          <!-- Display "No comments" if there are no comments -->
+          <p class="text-white">No comments.</p>
+        {% endif %}
+      </div>
+      
+      <p class="py-5"></p>
 
-            $('#repassword').on('keyup', function () {
-                validatePasswordMatch();
-            });
-        });
+      {% endfor %}
+    </div>
+    <!-- scrollify -->
+    <div class="col-sm-4 scrollify sticky"> 
+      <h5 class="fw-bold text-white">Uploaded Images</h5>
+      <div class="col"><hr style="color: #fff;"></div>
+      {% if newImg %}
+      {% for x in newImg %}
+        <div class="row pt-2">
+          <div class="col-sm-2">
+            <a href="/i/{{x.1}}">
+              <img src="/static/img/{{x.3}}" width="50" height="50">
+            </a>
+          </div>
+          <div class="col-sm-10 text-light">
+            <a href="/i/{{x.1}}">
+              {{x.4}} <br>
+              <i class="max-lines" style="font-size:small; color: #adadad;">{{x.5}}</i>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+      {% else %}
+      <div class="row pt-2">
+        <div class="col-sm-2">
+          <a href="#">
+            <img src="/static/other/blank_image.png" width="50" height="50">
+          </a>
+        </div>
+        <div class="col-sm-10 text-light">
+          No images yet.
+          <i class="max-lines" style="font-size:small; color: #adadad;">You should upload some images :3</i>
+        </div>
+      </div>
+      {% endif %}
+      <hr class="d-sm-none">
+    </div>
+    
 
-        function validatePassword() {
-            var password = $('#newpassword').val();
-            var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
 
-            if (regex.test(password)) {
-                $('#password-feedback').text('');
-            } else {
-                $('#password-feedback').text('Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.');
-            }
-        }
+  </div>
+</div>
+<script>
+  $(document).ready(function () {
+      $('#newpassword').on('keyup', function () {
+          validatePassword();
+      });
 
-        function validatePasswordMatch() {
-            var password = $('#newpassword').val();
-            var repassword = $('#repassword').val();
+      $('#repassword').on('keyup', function () {
+          validatePasswordMatch();
+      });
+  });
 
-            if (password === repassword) {
-                $('#repassword-feedback').text('');
-            } else {
-                $('#repassword-feedback').text('Password must be the same!');
-            }
-        }
-    </script>
+  function validatePassword() {
+      var password = $('#newpassword').val();
+      var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+
+      if (regex.test(password)) {
+          $('#password-feedback').text('');
+      } else {
+          $('#password-feedback').text('Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.');
+      }
+  }
+
+  function validatePasswordMatch() {
+      var password = $('#newpassword').val();
+      var repassword = $('#repassword').val();
+
+      if (password === repassword) {
+          $('#repassword-feedback').text('');
+      } else {
+          $('#repassword-feedback').text('Password must be the same!');
+      }
+  }
+</script>
 </body>
+{% include 'footer.html' %}
 
-<footer class="footer-nav">
-    <nav class="navbar navbar-expand-sm navbar-dark fixed-bottom" style="background-color:rgba(46, 44, 54, 0);">
-        <div class="container-fluid">
-        <div class="collapse navbar-collapse" id="mynavbar">
-            <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-                <a class="nav-link">© 2023 PeekyPup, Inc</a>
-            </li>
-            </ul>
-            <form class="d-flex">
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item pe-2">
-                <a class="nav-link" href="#">About</a>
-                </li>
-                <li class="nav-item pe-2">
-                <a class="nav-link" href="#">Terms</a>
-                </li>
-                <li class="nav-item pe-2">
-                <a class="nav-link" href="#">Privacy</a>
-                </li>
-            </ul>
-            </form>
-        </div>
-        </div>
-    </nav> 
-</footer>
-</html>
