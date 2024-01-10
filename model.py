@@ -215,7 +215,7 @@ class Model():
                     GROUP BY
                         tags.id, image.id, tags.tag_name, image.filename, image.title, image.desc, image.input_date, users.username
                     ORDER BY
-                        COUNT(image_like.image_id) DESC;
+                        image.score DESC;
                     """, (userId, userId))
         return cur.fetchall()
 
